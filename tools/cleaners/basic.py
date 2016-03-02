@@ -1,4 +1,5 @@
 from tools.filehelper import Filehelper
+import re
 
 # this class tries to clean up text parsed from PDF
 class Basic:
@@ -15,31 +16,35 @@ class Basic:
 
 		actFile = open(fileName, 'r')
 		outFile = open(newFileName, 'w+')
+		firstPartDone = False	# checks, if the introduction part is done and arugment can be added to output file
+		reProceedings = re.compile("P R O C E E D I N G S\s*\(\d{2}:\d{2}\s(a|p)\.m\.\)");
+		reCaseSubmitted = re.compile("The case is submitted\.\s*\(Whereupon,");
 
+		prevTwoLines = ['','']
 		res = []
-		totalLines = 0;
 		for line in actFile:
-			print
-			totalLines += 1
-			parts = line.strip().split()
-			print '"'+line+'"'+str(len(line))
-			print "Parts = " + str(len(parts)) + " ===== > " + str(totalLines)
-			if( len(parts ) == 1 ): # tehre is only one "word" so there's a suspicion that it is only number of line
-				try:
-					num  = (int)(parts[0].strip())
-					print( "Line " + str(totalLines) + " skipped #Exception#")
-					continue
-				except ValueError:
-					# the value is OK => there is some text
-					res.append(line)
 
-			else:
-				if len( parts ) == 0: # skip empty lines
-					print( "Line " + str(totalLines) + " skipped #Empty Line#")
-					continue;
-				else:
-					res.append(line)
+			 # trim white spaces
+			line = line.strip()
+			if len(line) == 0: # skip empty lines
+				continue
 
-		print( totalLines )
-		print( len(res))
-		outFile.writelines(res[:50])
+			# keep track of last 2 non-empty lines
+			prevTwoLines[0] = prevTwoLines[1]
+			prevTwoLines[1] = line
+			actLine = ' '.join(prevTwoLines)
+
+			# is this the beginning of proceeding?
+			if reProceedings.search(actLine) != None:
+				firstPartDone = True
+				continue
+
+			# check, if the case was submitted => end reading the file and do not write the previous line to clean file
+			if reCaseSubmitted.search(actLine) != None:
+				res.pop()
+				break
+
+			if firstPartDone:
+				res.append(line + "\n")
+
+		outFile.writelines(res) # write clean file
