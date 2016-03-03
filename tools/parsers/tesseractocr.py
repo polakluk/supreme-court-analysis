@@ -18,7 +18,7 @@ class TesseractOcr:
 	def __init__(self, outputDir):
 		self.__outputDir = outputDir
 #		self.__img_crop = [270, 150, 1105, 1480] #left top right bottom # 150 DPI
-		self.__img_crop = [520, 320, 2200, 2960] #left top right bottom # 300DPI
+		self.__img_crop = [520, 320, 2220, 2960] #left top right bottom # 300DPI
 		self.__threshold = 0.5508
 		self.__dpi = 300
 

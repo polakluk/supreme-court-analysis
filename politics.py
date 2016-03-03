@@ -5,7 +5,7 @@ import getopt
 from tools.parsers import pdf as pdfParser
 from tools.parsers import tesseractocr as TesseractParser
 from tools.cleaners import basic
-
+from tools.dialogs import extractor
 
 # read PDF file
 def readPdfFile(fileName):
@@ -18,6 +18,10 @@ def preprocessInputFile(fileName):
 	cleaner = basic.Basic("."+os.path.sep+"parsed-data"+os.path.sep);
 	cleaner.cleanUp(fileName);
 
+def extractPartsDialog(fileName):
+	with open(fileName, "r") as cleanFile:
+		extractTool = extractor.Extractor(True)
+		extractTool.Extract(cleanFile.read())
 
 # main
 def main(argv):
@@ -26,7 +30,8 @@ def main(argv):
 
 	execute = {
 		0 : readPdfFile,
-		1 : preprocessInputFile
+		1 : preprocessInputFile,
+		2 : extractPartsDialog
 	}
 
 	execute[mode](argv[2]);

@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from tools.filehelper import Filehelper
 import re
 
@@ -7,6 +9,7 @@ class Basic:
 	# constructor
 	def __init__(self, outputDir):
 		self.__outputDir = outputDir
+		self.__utf8table = {ord(u'—') : '-'}
 
 
 	# cleaning up function - returns only transfript from oral argument
@@ -24,8 +27,10 @@ class Basic:
 		res = []
 		for line in actFile:
 
-			 # trim white spaces
-			line = line.strip()
+			print(line)
+			 # trim white spaces and get rid of wierd unicode character
+			line = self.__preprocessLine(line)
+
 			if len(line) == 0: # skip empty lines
 				continue
 
@@ -48,3 +53,14 @@ class Basic:
 				res.append(line + "\n")
 
 		outFile.writelines(res) # write clean file
+
+
+	# this function removes all leading and trailing white spaces from the line
+	# also, it replaces all weird unicode characters
+	def __preprocessLine(self, line):
+			res = line.decode('utf-8')
+			res = res.replace(u'—','-')
+			res = res.replace(u'‘','\'')
+			res = res.encode('ASCII')
+			
+			return res.strip()
