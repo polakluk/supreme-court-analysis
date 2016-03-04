@@ -52,8 +52,12 @@ class FollowRatio:
 			return res
 
 		# there are, so let's get our hands dirty
-#		for item in follows:
+		for item in follows:
+			actPerson = item['role'] + "|" + item['name']
+			res[actPerson][item['follower']] += 1
 
+
+		print(res)
 		return res
 
 

@@ -40,7 +40,7 @@ class Follow:
 				# this person follows somebody
 				position = actJusticePart / numPartsJustices
 				res.append(peopleHandler.GetEmptyReportFollows( actPerson.split('|'), 
-																part['name'], previousPerson.split('|')[1],
+																previousPerson,
 																position ))
 
 			previousPerson = actPerson
