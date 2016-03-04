@@ -1,4 +1,5 @@
 import re
+from tools.dialogs import person as personDialog
 
 # this class receives cleaned text and extract    
 class Extractor:
@@ -18,6 +19,7 @@ class Extractor:
 	def Extract(self, text):
 		res = []
 
+		people = personDialog.Person()
 		reFindPeople = re.compile("(\n|--|^)(MR\.|JUSTICE|CHIEF JUSTICE|MRS\.|MS\.)(\s\w+)+:")
 		lastMessageEnded = 0 # position where the last person's part ended
 
@@ -35,14 +37,9 @@ class Extractor:
 			prevPerson = actPerson
 
 			# start a new person
-			actPerson = {
-				'person' : '',
-				'text' : '',
-				'was_interruped' : False,
-				'role' : 'other'
-			}
+			actPerson = people.GetEmpty()
 
-			actPerson['person'] = person.group(3).strip()
+			actPerson['name'] = person.group(3).strip()
 			actPerson['role'] = self.__identifyRole(person.group(2).strip())
 
 			# if this is the first person to be processed,
@@ -51,16 +48,12 @@ class Extractor:
 				# ok, process this person
 				txt = text[lastMessageEnded:person.start()].strip()
 
-				print prevPerson['person']+"=>"+txt[-2:]+"!!!"
-
 				if txt[-2:] == '--':
 					prevPerson['was_interruped'] = True
 					prevPerson['text'] = self.__clearTextPart( txt[:len(txt)-2] ) # use text without interruption marks
 				else:
 					prevPerson['text'] = self.__clearTextPart( txt )
 
-				if actPerson['person'] == 'KENNEDY':
-					print person.group(1).strip() + "#####"
 				if person.group(1).strip() == "--" : # yeah, the previous person was interrupted
 					prevPerson['was_interruped'] = True
 
