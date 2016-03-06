@@ -27,37 +27,48 @@ class FollowRatio:
 	# returns the list of pair of justices 
 	def CalculateFollowRatio(self):
 		if self.__dialog == None:
-			return []
+			return None
 
 		peopleHandler = personDialog.Person()
-		people = self.__dialog.GetListPeople() 
+		people = self.__dialog.GetListPeople(True) 
 		
 		report = followReport.Follow(self.__outputDir)
 		report.SetDialog(self.__dialog)
 		follows = report.Follows()
+		# filter only interesting part for this report, if needed
+		if self.__interval_start != 0 or self.__interval_end != 1.0:
+			follows = [p for p in follows if p['position'] >= self.__interval_start and  
+											p['position'] <= self.__interval_end]
 
 		res = {}
 		# prepare data structure
 		for personItem in people:
-			numFollows = len([item for item in follows if item['name'] == personItem[1] and item['role'] == personItem[0]])
+			numFollows = len([item for item in follows if item['name'] == personItem[1] and 
+															item['role'] == personItem[0]])
 			res['|'.join(personItem)] = self.__prepareDictionary(personItem[1], numFollows )
-
-
-		# filter only interesting part for this report, if needed
-		if self.__interval_start != 0 or self.__interval_end != 1.0:
-			follows = [p for p in follows if p['values']['position'] >= self.__interval_start and  p['values']['position'] <= self.__interval_end]
 
 		# are there any follows to analyze?
 		if len(follows) == 0:
-			return res
+			return None
+
 
 		# there are, so let's get our hands dirty
 		for item in follows:
-			actPerson = item['role'] + "|" + item['name']
-			res[actPerson][item['follower']] += 1
+			res[item['follower']][item['followee']] += 1
 
+		# now calculate ratio per followe for each followee
+		resKeys = res.keys()
+		for keyMain in resKeys:
+			followKeys = res[keyMain].keys()
+			numTotal = float(res[keyMain]['__num'])
+			for keyFollow in followKeys:
+				# skip this helper index
+				if keyFollow == '__num':
+					continue
 
-		print(res)
+				if res[keyMain][keyFollow] > 0:
+					res[keyMain][keyFollow] = res[keyMain][keyFollow] / numTotal
+
 		return res
 
 
@@ -69,7 +80,7 @@ class FollowRatio:
 		res = {'__num' : num }
 		# prepare data structure
 		for personItem in people:
-			if personItem[1] == skip: # skip the justice himself
+			if personItem[1] != skip: # skip the justice himself
 				res['|'.join(personItem)] = 0.0
 
 		return res

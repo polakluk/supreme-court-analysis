@@ -23,7 +23,7 @@ class Container:
 
 	# get list of people who participate in the dialog
 	# returns list of arrays in form [0 => role, 1 => name]
-	def GetListPeople(self, refresh = False):
+	def GetListPeople(self, onlyJustices = False, refresh = False):
 		if self.__dialog == None: # no dialog defined yet
 			return []
 
@@ -31,6 +31,9 @@ class Container:
 		if self.__list_people == None or refresh:
 			self.__list_people = []
 			for person in self.__dialog:
+				if onlyJustices and person['role'] != 'justice':
+					continue
+
 				actPerson = person['role'] + "|" + person['name']
 				if actPerson not in self.__list_people:
 					self.__list_people.append(actPerson)

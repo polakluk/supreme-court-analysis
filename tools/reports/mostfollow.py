@@ -1,5 +1,5 @@
 from tools.dialogs import person as personDialog
-from tools.reports import follow as followReport
+from tools.reports import followratio as followRatioReport
 
 # this class prepares reports from loaded dialog
 # it expect list of Person objects
@@ -27,24 +27,41 @@ class MostFollow:
 	# returns the list of pair of justices 
 	def MostFollows(self):
 		if self.__dialog == None:
-			return []
+			return None
 
-		peopleHandler = personDialog.Person()
-		people = self.__dialog.GetListPeople() 
-		
+		# prepare data structures
+		peopleHelper = personDialog.Person()
+		people = self.__dialog.GetListPeople(True) 
 		res = {}
-		# prepare data structure
-		for personItem in people:
-			res['|'.join(personItem)] = 0
 
-		report = followReport.Follow(self.__outputDir)
+		# get data about followe ratio for eah justice
+		report = followRatioReport.FollowRatio(self.__outputDir)
 		report.SetDialog(self.__dialog)
-		follows = report.Follows()
+		report.SetInterval(self.__interval_start, self.__interval_end)
+		ratios = report.CalculateFollowRatio()
 
-		# filter only interesting part for this report, if needed
-		if self.__interval_start != 0 or self.__interval_end != 1.0:
-			follows = [p for p in follows if p['values']['position'] >= self.__interval_start and  p['values']['position'] <= self.__interval_end]
+		if ratios == None: # no information for selected interal
+			return None
 
-		if len(follows) == 0:
-			return res
+		# extract the most followed-after justice per each justice
+		resKeys = ratios.keys()
+		for key in resKeys:
+			followKeys = ratios[key].keys()
+			bestKey = None
+			for keyFollow in followKeys:
+				if keyFollow == '__num':
+					continue
+				if bestKey == None or ratios[key][bestKey] < ratios[key][keyFollow]:
+					if float(ratios[key][keyFollow]) > 0.001:
+						bestKey = keyFollow
+
+			if bestKey == None:
+				res[key] = peopleHelper.GetEmptyReportMostFollow( key.split('|'), 
+																0.0,
+																None)
+			else:
+				res[key] = peopleHelper.GetEmptyReportMostFollow( key.split('|'), 
+																ratios[key][bestKey],
+																bestKey)
+
 		return res

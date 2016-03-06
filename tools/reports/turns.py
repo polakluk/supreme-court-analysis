@@ -18,7 +18,7 @@ class Turns:
 	# calculates longest turns per each justice 
 	def Turns(self):
 		if self.__dialog == None:
-			return []
+			return None
 
 		peopleHandler = personDialog.Person()
 		people = self.__dialog.GetListPeople() 

@@ -2,6 +2,7 @@
 import os
 import sys
 import getopt
+import pprint
 
 # my tools
 from tools.parsers import pdf as pdfParser
@@ -29,6 +30,8 @@ def preprocessInputFile(fileName):
 
 # extracts parts of dialo from clean file and later saves the,
 def extractPartsDialog(fileName):
+	pp = pprint.PrettyPrinter(indent = 4 )
+
 	with open(fileName, "r") as cleanFile:
 		extractTool = extractor.Extractor(False)
 		dialogParts = extractTool.Extract(cleanFile.read())
@@ -44,15 +47,15 @@ def extractPartsDialog(fileName):
 #		report2.SetDialog(dialog)
 #		print ( report2.Follows() )
 
-		report3 = followRatioReport.FollowRatio("."+os.path.sep+"report-data"+os.path.sep)
-		report3.SetDialog(dialog)
-		report3.SetInterval(0.2, 0.5)
-		print ( report3.CalculateFollowRatio() )
+#		report3 = followRatioReport.FollowRatio("."+os.path.sep+"report-data"+os.path.sep)
+#		report3.SetDialog(dialog)
+#		report3.SetInterval(0.2, 0.5)
+#		print ( report3.CalculateFollowRatio() )
 
-#		report4 = mostFollowReport.MostFollow("."+os.path.sep+"report-data"+os.path.sep)
-#		report4.SetDialog(dialog)
-#		report4.SetInterval(0.2, 0.5)
-#		print ( report4.MostFollows() )
+		report4 = mostFollowReport.MostFollow("."+os.path.sep+"report-data"+os.path.sep)
+		report4.SetDialog(dialog)
+		report4.SetInterval(0.2, 0.7)
+		pp.pprint ( report4.MostFollows() )
 
 
 # main
