@@ -1,3 +1,4 @@
+import csv
 from tools.dialogs import person as personDialog
 
 # this class prepares reports from loaded dialog
@@ -11,9 +12,11 @@ class Turns:
 		self.__outputDir = reportsDir
 		self.__dialog = None
 
+
 	# sets dialog for this report
 	def SetDialog(self, newDialog):
 		self.__dialog = newDialog
+
 
 	# calculates longest turns per each justice 
 	def Turns(self):
@@ -21,7 +24,7 @@ class Turns:
 			return None
 
 		peopleHandler = personDialog.Person()
-		people = self.__dialog.GetListPeople() 
+		people = self.__dialog.GetListPeople(True) 
 		
 		res = {}
 		# prepare data structure
@@ -54,4 +57,17 @@ class Turns:
 		final = sorted([peopleHandler.GetEmptyReportTurns( key.split('|'), res[key] ) for key in resKeys],
 						 key = lambda x: x['turns'], reverse = True)
 		return final
+
+
+	# this method saveds data produced by this report to a CSV file
+	def SaveToFile(self, data, name = None):
+		fileName = 'turns.csv'
+		if name != None:
+			fileName = name + ".csv"
+
+		with open(self.__outputDir + fileName, 'wb') as csvfile:
+			writer = csv.writer(csvfile, delimiter = ',')
+			writer.writerow(['Role', 'Name', 'Turns'])
+			for row in data:
+				writer.writerow([row['role'], row['name'], row['turns']])
 

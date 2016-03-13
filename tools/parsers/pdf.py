@@ -1,5 +1,5 @@
 # general imports
-from  tools.filehelper import Filehelper
+from  tools.filehelper import FileHelper
 # PDF related imports
 from pdfminer.converter import TextConverter
 from pdfminer.layout import LAParams
@@ -22,7 +22,7 @@ class Pdf:
 
 		pagenos = set()
 		# get file name
-		helper = Filehelper()
+		helper = FileHelper()
 		outfp = file(self.__outputDir + helper.GetFileName(pdfFile) + ".plain", 'w')
 
 		# read PDF

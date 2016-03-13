@@ -1,4 +1,4 @@
-from operator import attrgetter
+import csv
 
 from tools.dialogs import person as personDialog
 
@@ -15,9 +15,11 @@ class Follow:
 		self.__outputDir = reportsDir
 		self.__dialog = None
 
+
 	# sets dialog for this report
 	def SetDialog(self, newDialog):
 		self.__dialog = newDialog
+
 
 	# returns the list of pair of justices 
 	def Follows(self):
@@ -47,3 +49,17 @@ class Follow:
 
 
 		return res
+
+
+	# this method saveds data produced by this report to a CSV file
+	def SaveToFile(self, data, name = None):
+		fileName = 'follow.csv'
+		if name != None:
+			fileName = name + ".csv"
+
+		with open(self.__outputDir + fileName, 'wb') as csvfile:
+			writer = csv.writer(csvfile, delimiter = ',')
+			writer.writerow(['Role', 'Name', 'Followee Role', 'Followee Name', 'Position'])
+			for row in data:
+				follower = row['followee'].split('|')
+				writer.writerow([row['role'], row['name'], follower[0], follower[1], str(row['position'])])

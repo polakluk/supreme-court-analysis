@@ -1,5 +1,5 @@
 # general imports
-from  tools.filehelper import Filehelper
+from  tools.filehelper import FileHelper
 
 import wand.api
 from wand.image import Image
@@ -38,7 +38,7 @@ class TesseractOcr:
 		final_text = []
 		
 		# get file name
-		helper = Filehelper()
+		helper = FileHelper()
 		outfp = open(self.__outputDir + helper.GetFileName(pdfFile) + ".plain", 'w')
 
 		image_pdf = Image(filename=pdfFile, resolution=self.__dpi)

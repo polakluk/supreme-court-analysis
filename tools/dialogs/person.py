@@ -13,7 +13,7 @@ class Person:
 			}
 
 
-	# creates an empty object for a person for reporting justices turns
+	# creates an object for a person for reporting justices turns
 	def GetEmptyReportTurns(self, parts, val):
 		return {
 				'role' : parts[0],
@@ -21,7 +21,7 @@ class Person:
 				'turns' : val 
 		}
 
-	# creates an empty object for a person for reporting who follows each justice and when
+	# creates an object for a person for reporting who follows each justice and when
 	def GetEmptyReportFollows(self, parts, followee, position):
 		return {
 				'role' : parts[0],
@@ -31,11 +31,20 @@ class Person:
 				'position' : position
 		}
 
-	# creates an empty object for a person for reporting justices turns
+	# creates an object for a person for reporting justices turns
 	def GetEmptyReportMostFollow(self, parts, val, follower):
 		return {
 				'role' : parts[0],
 				'name' : parts[1],
 				'follower' : follower,
 				'ratio' : val
+		}
+
+	# creates an empty object for a person for reporting length and position of justices turns
+	def GetEmptyReportTurnLength(self, parts, position, length):
+		return {
+				'role' : parts[0],
+				'name' : parts[1],
+				'position' : position,
+				'length' : length
 		}

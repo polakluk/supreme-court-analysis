@@ -1,3 +1,5 @@
+import csv
+
 from tools.dialogs import person as personDialog
 from tools.reports import follow as followReport
 
@@ -15,14 +17,17 @@ class FollowRatio:
 		self.__interval_start = 0.0
 		self.__interval_end = 1.0
 
+
 	# sets dialog for this report
 	def SetDialog(self, newDialog):
 		self.__dialog = newDialog
+
 
 	# sets interval of interest for this report
 	def SetInterval(self, start, end):
 		self.__interval_start = start
 		self.__interval_end = end
+
 
 	# returns the list of pair of justices 
 	def CalculateFollowRatio(self):
@@ -84,3 +89,22 @@ class FollowRatio:
 				res['|'.join(personItem)] = 0.0
 
 		return res
+
+	# this method saveds data produced by this report to a CSV file
+	def SaveToFile(self, data, name = None):
+		fileName = 'followratio.csv'
+		if name != None:
+			fileName = name + ".csv"
+
+		with open(self.__outputDir + fileName, 'wb') as csvfile:
+			writer = csv.writer(csvfile, delimiter = ',')
+			writer.writerow(['Role', 'Name', 'Follower Role', 'Follower Name', 'Ratio'])
+			dataKeys = data.keys()
+			for key in dataKeys:
+				justice = key.split('|')
+				followerKyes = data[key].keys()
+				for keyFollow in followerKyes:
+					if keyFollow == '__num':
+						continue
+					follower = keyFollow.split('|')
+					writer.writerow([justice[0], justice[1], follower[0], follower[1], str(data[key][keyFollow])])

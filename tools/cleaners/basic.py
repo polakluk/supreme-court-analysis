@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from tools.filehelper import Filehelper
+from tools.filehelper import FileHelper
 import re
 
 # this class tries to clean up text parsed from PDF
@@ -14,7 +14,7 @@ class Basic:
 
 	# cleaning up function - returns only transfript from oral argument
 	def cleanUp(self, fileName):
-		helper = Filehelper()
+		helper = FileHelper()
 		newFileName = self.__outputDir + helper.GetFileName(fileName) + ".clean"
 
 		actFile = open(fileName, 'r')

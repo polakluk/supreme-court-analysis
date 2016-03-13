@@ -1,6 +1,8 @@
 from tools.dialogs import person as personDialog
 from tools.reports import followratio as followRatioReport
 
+import csv
+
 # this class prepares reports from loaded dialog
 # it expect list of Person objects
 # REPORT Description:
@@ -15,14 +17,17 @@ class MostFollow:
 		self.__interval_start = 0.0
 		self.__interval_end = 1.0
 
+
 	# sets dialog for this report
 	def SetDialog(self, newDialog):
 		self.__dialog = newDialog
+
 
 	# sets interval of interest for this report
 	def SetInterval(self, start, end):
 		self.__interval_start = start
 		self.__interval_end = end
+
 
 	# returns the list of pair of justices 
 	def MostFollows(self):
@@ -65,3 +70,20 @@ class MostFollow:
 																bestKey)
 
 		return res
+
+
+	# this method saveds data produced by this report to a CSV file
+	def SaveToFile(self, data, name = None):
+		fileName = 'mostfollow.csv'
+		if name != None:
+			fileName = name + ".csv"
+
+		with open(self.__outputDir + fileName, 'wb') as csvfile:
+			writer = csv.writer(csvfile, delimiter = ',')
+			writer.writerow(['Role', 'Name', 'Follower Role', 'Follower Name', 'Ratio'])
+			dataKeys = data.keys()
+			for key in dataKeys:
+				follower = ['---', '---']
+				if data[key]['follower'] != None:
+					follower = data[key]['follower'].split('|')
+				writer.writerow([data[key]['role'], data[key]['name'], follower[0], follower[1], data[key]['ratio']])

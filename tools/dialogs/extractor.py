@@ -1,12 +1,16 @@
 import re
+import csv
 from tools.dialogs import person as personDialog
+from tools.filehelper import FileHelper
 
 # this class receives cleaned text and extract    
 class Extractor:
 
 	# constructor
-	def __init__(self, isDebug):
+	def __init__(self, outputDir, isDebug):
+		self.__outputDir = outputDir
 		self.__debug = isDebug
+
 
 	# this method will extract parts of dialog per person
 	# the function returns list of objects in format
@@ -85,3 +89,18 @@ class Extractor:
 			return res[2:].strip()
 		else:
 			return res
+
+
+	# this method saveds data produced by this report to a CSV file
+	def SaveToFile(self, data, name = None):
+		helper = FileHelper()
+		fileName = helper.GetFileName(name) + ".dialog"
+
+		with open(self.__outputDir + fileName, 'wb') as csvfile:
+			writer = csv.writer(csvfile, delimiter = ',')
+			writer.writerow(['Role', 'Name', 'Text', 'Was Interrupted'])
+			for row in data:
+				was_interruped = '0'
+				if row['was_interruped']:
+					was_interruped = '1'
+				writer.writerow([row['role'], row['name'], row['text'], was_interruped])
