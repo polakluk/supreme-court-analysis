@@ -18,7 +18,7 @@ class Person:
 		return {
 				'role' : parts[0],
 				'name' : parts[1],
-				'turns' : val 
+				'turns' : val
 		}
 
 	# creates an object for a person for reporting who follows each justice and when
@@ -41,10 +41,11 @@ class Person:
 		}
 
 	# creates an empty object for a person for reporting length and position of justices turns
-	def GetEmptyReportTurnLength(self, parts, position, length):
+	def GetEmptyReportTurnLength(self, parts, position, length, info):
 		return {
 				'role' : parts[0],
 				'name' : parts[1],
 				'position' : position,
-				'length' : length
+				'length' : length,
+				'information' : info
 		}

@@ -66,7 +66,7 @@ def generateReports(fileName, isDebug = True):
 
 	report3 = followRatioReport.FollowRatio("."+os.path.sep+"report-data"+os.path.sep)
 	report3.SetDialog(dialog)
-	report3.SetInterval(0.2, 0.5)
+#	report3.SetInterval(0.2, 0.5)
 	data = report3.CalculateFollowRatio()
 	if isDebug:
 		print

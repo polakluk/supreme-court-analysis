@@ -26,12 +26,12 @@ class TurnsPositionLength:
 		self.__interval_end = end
 
 
-	# calculates all turns, their length and position in dialog 
+	# calculates all turns, their length and position in dialog
 	def AllTurns(self):
 		if self.__dialog == None:
 			return None
 
-		peopleHandler = personDialog.Person()		
+		peopleHandler = personDialog.Person()
 		res = []
 
 		# walk through the dialog and calculate it
@@ -52,7 +52,8 @@ class TurnsPositionLength:
 				# another turn start right about now, so save this one
 				pos = actJusticePart / numPartsJustices
 				length = actCounter
-				res.append(peopleHandler.GetEmptyReportTurnLength(actPerson.split('|'), pos, length))
+				infoQuality = actCounter / numPartsJustices
+				res.append(peopleHandler.GetEmptyReportTurnLength(actPerson.split('|'), pos, length, infoQuality))
 
 				actJusticePart += actCounter
 				actCounter = 1 # reset counter
@@ -62,7 +63,7 @@ class TurnsPositionLength:
 
 		# filter only interesting part for this report, if needed
 		if self.__interval_start != 0 or self.__interval_end != 1.0:
-			res = [p for p in res if p['position'] >= self.__interval_start and  
+			res = [p for p in res if p['position'] >= self.__interval_start and
 											p['position'] <= self.__interval_end]
 
 		return res
@@ -76,6 +77,6 @@ class TurnsPositionLength:
 
 		with open(self.__outputDir + fileName, 'wb') as csvfile:
 			writer = csv.writer(csvfile, delimiter = ',')
-			writer.writerow(['Role', 'Name', 'Length', 'Position'])
+			writer.writerow(['Role', 'Name', 'Length', 'Position', 'Information'])
 			for row in data:
-				writer.writerow([row['role'], row['name'], row['length'], row['position']])
+				writer.writerow([row['role'], row['name'], row['length'], row['position'], row['information']])
