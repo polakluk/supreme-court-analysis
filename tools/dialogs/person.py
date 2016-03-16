@@ -8,7 +8,7 @@ class Person:
 		return {
 				'name' : '',
 				'text' : '',
-				'was_interruped' : False,
+				'was_interrupted' : False,
 				'role' : 'other'
 			}
 
@@ -49,3 +49,12 @@ class Person:
 				'length' : length,
 				'information' : info
 		}
+
+	def GetEmptyPosPerson(self, name, text, was_interrupted, role):
+		return {
+				'name' : name,
+				'text' : text,
+				'was_interrupted' : was_interrupted,
+				'role' : role,
+				'pos' : []
+				}

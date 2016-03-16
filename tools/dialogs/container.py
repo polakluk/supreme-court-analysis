@@ -8,7 +8,6 @@ class Container:
 	# constructor
 	def __init__(self):
 		self.__list_people = None
-		self.__list_people = None
 		self.__num_parts_justices = -1
 
 
@@ -53,9 +52,6 @@ class Container:
 		if self.__list_people == None or refresh:
 			self.__list_people = []
 			for person in self.__dialog:
-				if onlyJustices and person['role'] != 'justice':
-					continue
-
 				actPerson = person['role'] + "|" + person['name']
 				if actPerson not in self.__list_people:
 					self.__list_people.append(actPerson)
@@ -63,7 +59,12 @@ class Container:
 			self.__list_people = [p.split('|') for p in self.__list_people]
 
 
-		return self.__list_people
+		# return list of justices, if asked for
+		if onlyJustices:
+			return [p for p in self.__list_people if p[0] == 'justice']
+		else:
+			return self.__list_people
+
 
 	# this method gets number of dialog parts which belong to justices
 	def CountJusticesParts(self, refresh = False):

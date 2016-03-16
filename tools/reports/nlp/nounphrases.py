@@ -12,12 +12,6 @@ class NounPhrases:
 		self.__dialog = None
 		self.__interval_start = 0.0
 		self.__interval_end = 1.0
-		self.__pos_tagger = None
-
-
-	# sets POS tagger
-	def SetPosTagger(self, newPos):
-		self.__pos_tagger = newPos
 
 
 	# sets dialog for this report
@@ -38,7 +32,6 @@ class NounPhrases:
 			return None
 
 		parts = self.__dialog.GetDialog()
-		print( self.__pos_tagger.Tag( self.__pos_tagger.SeparateSentenctes(parts[0]['text'])))
 
 		return []
 
@@ -46,3 +39,8 @@ class NounPhrases:
 	# applies POS tagger to a part of dialog
 	def __applyPosTagger(self, text):
 		return []
+
+
+	# saves the report to file
+	def SaveToFile(self):
+		return None

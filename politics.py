@@ -10,6 +10,7 @@ from tools.parsers import tesseractocr as TesseractParser
 from tools.cleaners import basic
 from tools.dialogs import extractor
 from tools.dialogs import container as dialogContainer
+from tools.dialogs import posdialog as dialogPosDialog
 from tools.pos import nltkpos as nltkPos
 
 # frequency reports
@@ -20,7 +21,7 @@ from tools.reports import mostfollow as mostFollowReport
 from tools.reports import turnspositionlength as turnsPositionLengthReport
 
 # nlp reports
-from tools.reports import nounphrases as nounPhrasesReport
+from tools.reports.nlp import nounphrases as nounPhrasesReport
 
 # read PDF file
 def readPdfFile(fileName):
@@ -28,10 +29,12 @@ def readPdfFile(fileName):
 	currentParser = TesseractParser.TesseractOcr("."+os.path.sep+"parsed-data"+os.path.sep)
 	currentParser.readFile(fileName)
 
+
 # clean up read file afterwards
 def preprocessInputFile(fileName):
 	cleaner = basic.Basic("."+os.path.sep+"parsed-data"+os.path.sep);
 	cleaner.cleanUp(fileName);
+
 
 # extracts parts of dialo from clean file and later saves them
 def extractPartsDialog(fileName, isDebug = True):
@@ -98,16 +101,49 @@ def generateReports(fileName, isDebug = True):
 	report5.SaveToFile(data)
 
 
-def nlpReports(fileName):
+def nlpReports(fileName, isDebug = True):
 	pp = pprint.PrettyPrinter(indent = 4 )
+	posTagger = nltkPos.NltkPos()
+	dialog = dialogContainer.Container()
+	dialog.LoadFromFile(fileName)
+	dialog.SetPosTagger(posTagger)
+	dialog.GetPosTaggedParts()
+
+	report1 = nounPhrasesReport.NounPhrases("."+os.path.sep+"report-data"+os.path.sep)
+	report1.SetDialog(dialog)
+	nouns = report1.ExtractNounPhrases()
+	if isDebug:
+		print
+		print
+		print("############ NLP Report #1 - Noun Phrases")
+		pp.pprint(nouns)
+	report1.SaveToFile(nouns)
+
+
+def generatePosTags(fileName, isDebug = False):
+	pp = pprint.PrettyPrinter(indent = 4 )
+	posTagger = nltkPos.NltkPos()
+	
 	dialog = dialogContainer.Container()
 	dialog.LoadFromFile(fileName)
 
+	dialogPos = dialogPosDialog.PosDialog("."+os.path.sep+"parsed-data"+os.path.sep, isDebug)
+	dialogPos.SetDialog(dialog)
+	dialogPos.SetPosTagger(posTagger)
+	data = dialogPos.GetPosTaggedParts()
+	if isDebug:
+		pp.pprint(data )
+	dialogPos.SaveToFile(fileName)
+
+
+def test(fileName):
 	posTagger = nltkPos.NltkPos()
-	report1 = nounPhrasesReport.NounPhrases("."+os.path.sep+"report-data"+os.path.sep)
-	report1.SetDialog(dialog)
-	report1.SetPosTagger(posTagger)
-	report1.ExtractNounPhrases()
+
+	pp = pprint.PrettyPrinter(indent = 4 )
+	dialogPos = dialogPosDialog.PosDialog("."+os.path.sep+"parsed-data"+os.path.sep)
+	dialogPos.LoadFromFile(fileName)
+	pp.pprint(dialogPos.GetPosTaggedParts())
+
 
 
 # main
@@ -120,7 +156,9 @@ def main(argv):
 		1 : preprocessInputFile,
 		2 : extractPartsDialog,
 		3 : generateReports,
-		4 : nlpReports
+		4 : nlpReports,
+		5 : generatePosTags,
+		6 : test
 	}
 
 	execute[mode](argv[2]);

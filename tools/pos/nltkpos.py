@@ -21,12 +21,18 @@ class NltkPos:
 
 
 	# tag each word in provided sentencted
-	def Tag(self, sentences):
+	def Tag(self, sentences, isDebug = False):
 		res = []
 
 		for sentence in sentences:
+			if isDebug:
+				print("Start preprocessing")
 			words = self.__preprocess(word_tokenize(sentence))
-			res.append(pos_tag(words))
+			if isDebug:
+				print("End preprocessing")
+			res.append([[word[0], word[1]] for word in  pos_tag(words)])
+			if isDebug:
+				print("End Tagging")
 
 		return res
 

@@ -17,7 +17,7 @@ class Extractor:
 	# {
 	#    'person' : 'name of the person',
 	#    'text' : 'what the person said',
-	#    'was_interruped' : 'true or false indicating whether this part of dialog was interruped by following speaker'
+	#    'was_interrupted' : 'true or false indicating whether this part of dialog was interruped by following speaker'
 	#    'role' : 'either "justice" or "other" in dialog'
 	#}
 	def Extract(self, text):
@@ -53,13 +53,13 @@ class Extractor:
 				txt = text[lastMessageEnded:person.start()].strip()
 
 				if txt[-2:] == '--':
-					prevPerson['was_interruped'] = True
+					prevPerson['was_interrupted'] = True
 					prevPerson['text'] = self.__clearTextPart( txt[:len(txt)-2] ) # use text without interruption marks
 				else:
 					prevPerson['text'] = self.__clearTextPart( txt )
 
 				if person.group(1).strip() == "--" : # yeah, the previous person was interrupted
-					prevPerson['was_interruped'] = True
+					prevPerson['was_interrupted'] = True
 
 				res.append(prevPerson)
 
@@ -100,7 +100,7 @@ class Extractor:
 			writer = csv.writer(csvfile, delimiter = ',')
 			writer.writerow(['Role', 'Name', 'Text', 'Was Interrupted'])
 			for row in data:
-				was_interruped = '0'
-				if row['was_interruped']:
-					was_interruped = '1'
-				writer.writerow([row['role'], row['name'], row['text'], was_interruped])
+				was_interrupted = '0'
+				if row['was_interrupted']:
+					was_interrupted = '1'
+				writer.writerow([row['role'], row['name'], row['text'], was_interrupted])
