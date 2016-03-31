@@ -1,4 +1,5 @@
 from tools.dialogs import person as personDialog
+from tools.dialogs import helper as dialogHelper
 from tools.reports import followratio as followRatioReport
 
 import csv
@@ -34,9 +35,10 @@ class MostFollow:
 		if self.__dialog == None:
 			return None
 
+		helper = dialogHelper.Helper()
 		# prepare data structures
 		peopleHelper = personDialog.Person()
-		people = self.__dialog.GetListPeople(True) 
+		people = helper.GetListPeople(self.__dialog.GetDialog(), True) 
 		res = {}
 
 		# get data about followe ratio for eah justice

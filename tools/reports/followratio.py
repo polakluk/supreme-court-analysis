@@ -53,7 +53,7 @@ class FollowRatio:
 		for personItem in people:
 			numFollows = len([item for item in follows if item['name'] == personItem[1] and 
 															item['role'] == personItem[0]])
-			res['|'.join(personItem)] = self.__prepareDictionary(personItem[1], numFollows )
+			res['|'.join(personItem)] = self.__prepareDictionary(personItem[1], numFollows, people )
 
 		# are there any follows to analyze?
 		if len(follows) == 0:
@@ -82,8 +82,7 @@ class FollowRatio:
 
 	# prepares dictionary for each justice with all justices skipping record for the justice themselves
 	# the dictionary containts item __num represents total number of follows for this judge
-	def __prepareDictionary(self, skip, num):
-		people = self.__dialog.GetListPeople()
+	def __prepareDictionary(self, skip, num, people):
 
 		res = {'__num' : num }
 		# prepare data structure
