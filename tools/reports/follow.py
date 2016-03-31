@@ -1,5 +1,6 @@
 import csv
 
+from tools.dialogs import helper as dialogHelper
 from tools.dialogs import person as personDialog
 
 # this class prepares reports from loaded dialog
@@ -24,12 +25,13 @@ class Follow:
 	# returns the list of pair of justices 
 	def Follows(self):
 		peopleHandler = personDialog.Person()
+		helper = dialogHelper.Helper()
 		res = []
 
 		# walk through the dialog and calculate it
 		previousPerson = None
 		actJusticePart = 0
-		numPartsJustices = float(self.__dialog.CountJusticesParts())
+		numPartsJustices = float(helper.CountJusticesParts(self.__dialog.GetDialog()))
 		for part in self.__dialog.GetDialog():
 			# the report is only intersted in exchange between justices
 			if part['role'] == 'other':

@@ -1,5 +1,6 @@
 import csv
 
+from tools.dialogs import helper as dialogHelper
 from tools.dialogs import person as personDialog
 from tools.reports import follow as followReport
 
@@ -34,8 +35,10 @@ class FollowRatio:
 		if self.__dialog == None:
 			return None
 
+		helper = dialogHelper.Helper()
 		peopleHandler = personDialog.Person()
-		people = self.__dialog.GetListPeople(True) 
+		people = helper.GetListPeople(self.__dialog.GetDialog(), True)
+		numPartsJustices = float(len(people)) 
 		
 		report = followReport.Follow(self.__outputDir)
 		report.SetDialog(self.__dialog)

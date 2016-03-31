@@ -1,5 +1,6 @@
 import csv
 from tools.dialogs import person as personDialog
+from tools.dialogs import helper as dialogHelper
 
 # this class prepares reports from loaded dialog
 # it expect list of Person objects
@@ -31,6 +32,7 @@ class TurnsPositionLength:
 		if self.__dialog == None:
 			return None
 
+		helper = dialogHelper.Helper()
 		peopleHandler = personDialog.Person()
 		res = []
 
@@ -38,7 +40,7 @@ class TurnsPositionLength:
 		previousPerson = None
 		actCounter = 0
 		actJusticePart = 0
-		numPartsJustices = float(self.__dialog.CountJusticesParts())
+		numPartsJustices = float(helper.CountJusticesParts(self.__dialog.GetDialog()))
 		for part in self.__dialog.GetDialog():
 			# the report is only intersted in exchange between justices
 			if part['role'] == 'other':

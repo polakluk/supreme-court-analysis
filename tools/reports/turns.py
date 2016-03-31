@@ -1,5 +1,6 @@
 import csv
 from tools.dialogs import person as personDialog
+from tools.dialogs import helper as dialogHelper
 
 # this class prepares reports from loaded dialog
 # it expect list of Person objects
@@ -23,8 +24,10 @@ class Turns:
 		if self.__dialog == None:
 			return None
 
+		helper = dialogHelper.Helper()
+
 		peopleHandler = personDialog.Person()
-		people = self.__dialog.GetListPeople(True) 
+		people = helper.GetListPeople(self.__dialog.GetDialog(), True) 
 		
 		res = {}
 		# prepare data structure

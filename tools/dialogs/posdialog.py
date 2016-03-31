@@ -79,6 +79,7 @@ class PosDialog:
 	# load POS tags from file
 	def LoadFromFile(self, fName):
 		self.__list_parts_pos = []
+		self.__dialog = []
 		people = personDialog.Person()
 		with open(fName, 'rb') as csvfile:
 			reader = csv.reader(csvfile, delimiter=',')
@@ -92,5 +93,14 @@ class PosDialog:
 					sentences = [[word.split(self.__pos_delimiter) for word in sentence.split(self.__word_delimiter)] for sentence in row[4].split(self.__sentence_delimiter)]
 					obj['pos'] = sentences
 					self.__list_parts_pos.append(obj)
+
+					# maintain original Dialog object too
+					objOriginal = people.GetEmpty()
+					objOriginal['role'] = row[0]
+					objOriginal['name'] = row[1]
+					objOriginal['text'] = row[2]
+					objOriginal['was_interrupted'] = row[3] == '1'
+					self.__dialog.append(objOriginal);
+
 				else:
 					skippedFirstLine = True

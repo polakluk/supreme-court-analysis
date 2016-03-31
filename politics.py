@@ -103,11 +103,8 @@ def generateReports(fileName, isDebug = True):
 
 def nlpReports(fileName, isDebug = True):
 	pp = pprint.PrettyPrinter(indent = 4 )
-	posTagger = nltkPos.NltkPos()
 	dialog = dialogContainer.Container()
 	dialog.LoadFromFile(fileName)
-	dialog.SetPosTagger(posTagger)
-	dialog.GetPosTaggedParts()
 
 	report1 = nounPhrasesReport.NounPhrases("."+os.path.sep+"report-data"+os.path.sep)
 	report1.SetDialog(dialog)
