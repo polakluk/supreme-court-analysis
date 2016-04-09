@@ -29,6 +29,16 @@ class PosDialog:
 		self.__list_parts_pos = None
 
 
+	# returns only dialog
+	def GetDialog(self):
+		return self.__dialog
+
+
+	# returns dialog with POS tags
+	def GetDialogPos(self):
+		return self.__list_parts_pos
+
+
 	# runs associated POS tagger on the dialog
 	def GetPosTaggedParts(self, refresh = False):
 		if self.__pos_tagger == None and self.__list_parts_pos == None:

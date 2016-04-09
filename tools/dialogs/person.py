@@ -50,6 +50,7 @@ class Person:
 				'information' : info
 		}
 
+	# creates an empty oblject for person with POS tags describing its text
 	def GetEmptyPosPerson(self, name, text, was_interrupted, role):
 		return {
 				'name' : name,
@@ -57,4 +58,12 @@ class Person:
 				'was_interrupted' : was_interrupted,
 				'role' : role,
 				'pos' : []
+				}
+
+	# creates an empty oblject for person with POS tags describing its text
+	def GetEmptyNounsPerson(self, name, role, nouns):
+		return {
+				'name' : name,
+				'role' : role,
+				'nouns' : nouns
 				}

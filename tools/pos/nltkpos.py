@@ -30,7 +30,10 @@ class NltkPos:
 			words = self.__preprocess(word_tokenize(sentence))
 			if isDebug:
 				print("End preprocessing")
-			res.append([[word[0], word[1]] for word in  pos_tag(words)])
+
+			posSentence = [[word[0], word[1]] for word in  pos_tag(words)]
+			if len(posSentence) > 0:
+				res.append(posSentence)
 			if isDebug:
 				print("End Tagging")
 

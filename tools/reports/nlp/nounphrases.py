@@ -1,4 +1,4 @@
-
+from tools.reports.nlp import nounphraseparts as nounPhrasePartsReport
 
 # this class prepares reports from loaded dialog
 # it expect list of Person objects
@@ -27,13 +27,17 @@ class NounPhrases:
 
 	# returns list with noun phrases
 	def ExtractNounPhrases(self):
+		report = nounPhrasePartsReport()
+		report.SetDialog(self.__dialog)
+		parts = report.ExtractNounPhrases()
+
 		# dont do anything unless everything is properly set up
-		if self.__dialog == None or self.__pos_tagger == None:
+		if parts == None:
 			return None
 
-		parts = self.__dialog.GetDialog()
+		result = []
 
-		return []
+		return result
 
 
 	# applies POS tagger to a part of dialog
