@@ -25,3 +25,20 @@ class Helper:
 	def CountJusticesParts(self, dialog):
 		# calculate the number, if needed or requested
 		return len([p for p in dialog if p['role'] == 'justice'])
+
+
+	# this method assigns position in dialog to each part
+	def AssignPositionsPartsDialog(self, dialog):
+		length = float(len(dialog))
+		lenJustices = float(self.CountJusticesParts(dialog))
+		idx = 0
+		idxJustice = 0
+		for part in dialog:
+			part['positions'] = {'dialog' : 0, 'justice' : 0}
+			part['positions']['dialog'] = idx / length
+			idx += 1
+			if part['role'] == 'justice':
+				part['positions']['justice'] = idxJustice / lenJustices
+				idxJustice += 1
+
+		return dialog

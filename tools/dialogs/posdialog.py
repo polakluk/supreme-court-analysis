@@ -26,7 +26,6 @@ class PosDialog:
 	# sets dialog for this report
 	def SetDialog(self, newDialog):
 		self.__dialog = newDialog
-		self.__list_parts_pos = None
 
 
 	# returns only dialog

@@ -8,7 +8,7 @@ import controller as mainController
 def main(argv):
 
 	mode = (int)(argv[1])
-	controller = mainController.Controller(True)
+	controller = mainController.Controller(True, True)
 	controller.Execute(mode, argv[2])
 	return 0
 
