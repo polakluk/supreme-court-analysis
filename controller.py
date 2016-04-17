@@ -25,6 +25,7 @@ from tools.reports import turnspositionlength as turnsPositionLengthReport
 from tools.reports.nlp import nounphraseparts as nounPhrasePartsReport
 from tools.reports.nlp import usednounsperson as usedNounsPersonReport
 from tools.reports.nlp import topicchainindex as topicChainIndexReport
+from tools.reports.nlp import groupsynonymstci as groupSynonymsTciReport
 
 # This is a controller class that handles execution of all tasks in this project
 class Controller:
@@ -172,13 +173,25 @@ class Controller:
     	report3.SetDialog(dialogPos)
 
         for person in people:
-            chains = report3.CalculateTciPerson(person[1], person[0], [['thing']])
+            nounsPerson = [ [noun[0]] for noun in nouns[person[1]]['nouns']]
+            chains = report3.CalculateTciPerson(person[1], person[0], nounsPerson)
             if self.__isDebug:
                 print
                 print
                 print("############ NLP Report #3 - Topic Chain Index (" + person[1] + ")")
-                self.__pprinter.pprint(chains)
+#                self.__pprinter.pprint(chains)
             report3.SaveToFile(person[1], person[0], chains)
+
+#        report4 = groupSynonymsTciReport.GroupSynonymsTci(self.__reportDatadir)
+#        report4.SetDialog(dialogPos)
+#        grouppedChains = report4.GroupTciByPerson()
+#        if self.__isDebug:
+#            print
+#            print
+#            print("############ NLP Report #4 - Group Topic Chain Index by person using synonyms")
+#            self.__pprinter.pprint(grouppedChains)
+#        report4.SaveToFile(grouppedChains)
+
 
 
     # this part puts POS tags to loaded file and saves them for later use

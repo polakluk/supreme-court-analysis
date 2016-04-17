@@ -30,7 +30,9 @@ class TopicChainIndex:
             return None
 
         # calculate position of each part in dialog
-        return [ {'word' : words[0], 'result' : self._calculateTciWordPerson(personName, personRole, words, parts)} for words in listWords]
+        results = [ {'word' : words[0], 'result' : self._calculateTciWordPerson(personName, personRole, words, parts)} for words in listWords]
+        results.sort(key = lambda x: x['result']['length'], reverse = True)
+        return results
 
 
     # saves the report to file

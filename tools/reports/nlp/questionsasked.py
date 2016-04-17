@@ -6,8 +6,8 @@ from tools.reports.nlp import nounphraseparts as nounPhrasePartsReport
 
 # this class prepares reports from loaded dialog
 # REPORT Description:
-# The report returns list of used nouns per person with their respective counts. For more accurate results taking synonyms into account, it uses synonyms provider
-class UsedNounsPerson:
+# The report returns list of questions asked by each person
+class QuestionsAsked:
 
 	# constructor
 	def __init__(self, reportsDir):
@@ -59,11 +59,12 @@ class UsedNounsPerson:
 			result[person[1]] = people.GetEmptyNounsPerson(person[1], person[0], {})
 
 		for phrase in self.__nounPhrases:
-			for word in phrase['nouns']:
-				if word in result[phrase['name']]['nouns'].keys():
-					result[phrase['name']]['nouns'][word] += 1
-				else:
-					result[phrase['name']]['nouns'][word] = 1
+			for sentence in phrase['nouns']:
+				for word in sentence:
+					if word[0] in result[phrase['name']]['nouns'].keys():
+						result[phrase['name']]['nouns'][word[0]] += 1
+					else:
+						result[phrase['name']]['nouns'][word[0]] = 1
 
 		# sort results for each person
 		for key in result.keys():

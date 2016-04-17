@@ -1,4 +1,5 @@
 from tools.dialogs import person as personDialog
+import numpy as np
 
 # this class prepares reports from loaded dialog
 # REPORT Description:
@@ -26,8 +27,11 @@ class NounPhraseParts:
 
 		result = []
 		for part in parts:
-			nounphrase = [ [w for w in sentence if w[1][0] == 'N'] for sentence in part['pos']]
-			result.append(people.GetEmptyNounsPerson(part['name'], part['role'], nounphrase))
+			uniqueNouns = set()
+			nounphrase = [ [w for w in sentence if w[1][0] == 'N'] for sentence in part['pos'] ]
+			# flatten the array and keep only unique words
+			[ [uniqueNouns.add(w[0].lower()) for w in sentence if len(w[0]) > 2] for sentence in nounphrase ]
+			result.append(people.GetEmptyNounsPerson(part['name'], part['role'], uniqueNouns))
 		return result
 
 
