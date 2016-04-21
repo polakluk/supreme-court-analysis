@@ -26,9 +26,9 @@ class Wordnet:
 			# get only words
 			for record in results:
 				for lemma in record.lemmas():
-					synonyms.append(str(lemma.name()))
+					synonyms.append(str(lemma.name()).lower())
 
 		except WordNetError: # check, if any synonym has been found (if not, return only this word)
 			return [word]
 
-		return synonyms
+		return list(set(synonyms))

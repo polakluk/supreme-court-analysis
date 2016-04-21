@@ -44,15 +44,53 @@ class GroupSynonymsTci:
 		report1.SetDialog(self.__dialog)
 		nouns = report1.FindUsedNounsRaw()
 
+		# then, create topic chains
 		report2 = topicChainIndexReport.TopicChainIndex(self.__outputDir)
 		report2.SetDialog(self.__dialog)
-
-		chains = []
+		chains = {}
 		for person in listPeople:
 			for noun in nouns[person[1]]['nouns']:
-				chains[person[1]+'|'+person[0]+"|" + noun] = report2.CalculateTciPerson(person[1], person[0], [[noun]])
+				found = report2.CalculateTciPerson(person[1], person[0], [[noun[0]]])
+				if found != None:
+					chains[person[1]+'|'+person[0]+"|" + noun[0]] = found[0]
 
-		return result
+		# now, join topic chains using synonyms
+		merged = 0
+		for idxChain in chains.keys():
+			chain = chains[idxChain][0]
+			synonyms = self.__synProvider.GetSynonyms(chain['word'])
+			print(chain)
+			print("************** For Word - " + chain['word'])
+			print(synonyms)
+			chainSynonyms = [ chain['name'] + "|" + chain['role'] + '|' + syn for syn in synonyms ]
+			# there is a match for this synonym
+			for newChain in chainSynonyms:
+				# do not check for the current chain
+				if newChain == idxChain:
+					continue
+
+				for searchIdx in chains.keys():
+					if searchIdx == idxChain:
+						continue
+
+					# there is a chain with thi synonym
+					if searchIdx == newChain:
+						if chains[idxChain][0]['result']['startPos'] > chains[searchIdx][0]['result']['startPos']:
+							chains[idxChain][0]['result']['startPos'] = chains[searchIdx][0]['result']['startPos']
+						if chains[idxChain][0]['result']['lastPos'] < chains[searchIdx][0]['result']['lastPos']:
+							chains[idxChain][0]['result']['lastPos'] = chains[searchIdx][0]['result']['lastPos']
+
+						chains[idxChain][0]['result']['count'] += chains[searchIdx][0]['result']['count']
+						chains[idxChain][0]['result']['length'] = chains[idxChain][0]['result']['lastPos'] - chains[idxChain][0]['result']['startPos']
+
+						# the last thing you do is to delete the synonym chain
+						del chains[searchIdx]
+						merged += 1
+						continue
+
+		print("Merged TCI: "+str(merged))
+
+		return chains
 
 
 	# saves the report to file

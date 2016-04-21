@@ -50,7 +50,7 @@ class Person:
 				'information' : info
 		}
 
-	# creates an empty oblject for person with POS tags describing its text
+	# creates an empty object for person with POS tags describing its text
 	def GetEmptyPosPerson(self, name, text, was_interrupted, role):
 		return {
 				'name' : name,
@@ -60,10 +60,20 @@ class Person:
 				'pos' : []
 				}
 
-	# creates an empty oblject for person with POS tags describing its text
+	# creates an empty object for person with POS tags describing its text
 	def GetEmptyNounsPerson(self, name, role, nouns):
 		return {
 				'name' : name,
 				'role' : role,
 				'nouns' : nouns
+				}
+
+	# creates an empty object for person to count words
+	def GetEmptyCountWordsPerson(self, name, role, countWords, countTurns, wordsPerTurn):
+		return {
+				'name' : name,
+				'role' : role,
+				'words' : countWords,
+				'turns' : countTurns,
+				'wordsPerTurn' : wordsPerTurn
 				}

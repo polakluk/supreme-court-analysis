@@ -1,12 +1,14 @@
 import csv
+from nltk import word_tokenize
+
 from tools.dialogs import person as personDialog
 from tools.dialogs import helper as dialogHelper
 
 # this class prepares reports from loaded dialog
 # it expect list of Person objects
 # REPORT Description:
-# The report counts the longest chain of question asked by each justice
-class Turns:
+# The report counts the number of words per person
+class MostWords:
 
 	# constructor
 	def __init__(self, reportsDir):
@@ -27,50 +29,37 @@ class Turns:
 		helper = dialogHelper.Helper()
 
 		peopleHandler = personDialog.Person()
-		people = helper.GetListPeople(self.__dialog.GetDialog(), True) 
+		people = helper.GetListPeople(self.__dialog.GetDialog()) 
 		
 		res = {}
 		# prepare data structure
 		for personItem in people:
-			res['|'.join(personItem)] = peopleHandler.GetEmptyCountWordsPerson(personItem)
+			res['|'.join(personItem)] = peopleHandler.GetEmptyCountWordsPerson(personItem[1], personItem[0], 0, 0, 0)
 
 		# walk through the dialog and calculate it
-		previousPerson = None
-		actCounter = 0
 		for part in self.__dialog.GetDialog():
-			# the report is only intersted in exchange between justices
-			if part['role'] == 'other':
-				continue
-
 			actPerson = part['role']+ "|" + part['name']
-			if actPerson == previousPerson or previousPerson == None:
-				# the chain continues
-				actCounter += 1
-			else:
-				# the chain of talks jus broke, so keep track of this, if you need to
-				if res[actPerson] < actCounter:
-					res[actPerson] = actCounter
+			words = word_tokenize(part['text'])
+			res[actPerson]['words'] += len(words)
+			res[actPerson]['turns'] += 1
 
-				actCounter = 0 # reset counter
+		for idx in res.keys():
+			res[idx]['wordsPerTurn'] = float(res[idx]['words']) / res[idx]['turns']
 
-			previousPerson = actPerson
-
-		# convert the results back into list of Person objects
-		resKeys = res.keys()
-		final = sorted([peopleHandler.GetEmptyReportTurns( key.split('|'), res[key] ) for key in resKeys],
-						 key = lambda x: x['turns'], reverse = True)
-		return final
+		# sort the final list by most words
+		res = sorted(res.values(), key = lambda x: x['words'], reverse = True)
+		return res
 
 
 	# this method saveds data produced by this report to a CSV file
 	def SaveToFile(self, data, name = None):
-		fileName = 'turns.csv'
+		fileName = 'words.csv'
 		if name != None:
 			fileName = name + ".csv"
 
 		with open(self.__outputDir + fileName, 'wb') as csvfile:
 			writer = csv.writer(csvfile, delimiter = ',')
-			writer.writerow(['Role', 'Name', 'Turns'])
+			writer.writerow(['Role', 'Name', 'Words', 'Turns', 'Words per Turn'])
 			for row in data:
-				writer.writerow([row['role'], row['name'], row['turns']])
+				writer.writerow([row['role'], row['name'], row['words'], row['turns'], row['wordsPerTurn']])
 

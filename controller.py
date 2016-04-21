@@ -20,6 +20,7 @@ from tools.reports import follow as followReport
 from tools.reports import followratio as followRatioReport
 from tools.reports import mostfollow as mostFollowReport
 from tools.reports import turnspositionlength as turnsPositionLengthReport
+from tools.reports import mostwords as mostWordsReport
 
 # nlp reports
 from tools.reports.nlp import nounphraseparts as nounPhrasePartsReport
@@ -41,7 +42,7 @@ class Controller:
 
 
     # entry point for code execution
-    def Execute(self, mode, fileName):
+    def Execute(self, mode, fileName, outputDir = None):
     	availableModes = {
     		0 : self._readPdfFile,
     		1 : self._preprocessInputFile,
@@ -51,6 +52,9 @@ class Controller:
     		5 : self._generatePosTags,
     		6 : self._test
     	}
+        # set custom output dir for reports, if defined
+        if outputDir != None:
+            self.__reportDatadir = outputDir
 
         # check, if the mode is supported
         if mode in availableModes.keys():
@@ -140,6 +144,16 @@ class Controller:
     		self.__pprinter.pprint(data)
     	report5.SaveToFile(data)
 
+        report6 = mostWordsReport.MostWords(self.__reportDatadir)
+        report6.SetDialog(dialog)
+        data = report6.CountWords()
+        if self.__isDebug:
+            print
+            print
+            print("############ Report #6 - Count Words per Person")
+            self.__pprinter.pprint(data)
+        report6.SaveToFile(data)
+
 
     # this part generates advanced reports rooted in NLP
     def _nlpReports(self, fileName):
@@ -153,7 +167,7 @@ class Controller:
     	report1 = nounPhrasePartsReport.NounPhraseParts(self.__reportDatadir)
     	report1.SetDialog(dialogPos)
 
-    	nouns = report1.ExtractNounPhrases()
+#    	nouns = report1.ExtractNounPhrases()
     	if self.__isDebug:
     		print
     		print
@@ -168,30 +182,34 @@ class Controller:
             print
             print("############ NLP Report #2 - Used Nouns Per Person")
 #            self.__pprinter.pprint(nouns)
+        report2.SaveToFile(nouns)
+
 
         report3 = topicChainIndexReport.TopicChainIndex(self.__reportDatadir)
     	report3.SetDialog(dialogPos)
-
         for person in people:
-            nounsPerson = [ [noun[0]] for noun in nouns[person[1]]['nouns']]
-            chains = report3.CalculateTciPerson(person[1], person[0], nounsPerson)
-            if self.__isDebug:
-                print
-                print
-                print("############ NLP Report #3 - Topic Chain Index (" + person[1] + ")")
-#                self.__pprinter.pprint(chains)
-            report3.SaveToFile(person[1], person[0], chains)
+            if person[1] == 'KENNEDY':
+                nounsPerson = [ noun[0] for noun in nouns[person[1]]['nouns']]
+                chains = report3.CalculateTciPerson(person[1], person[0], nounsPerson)
+                if self.__isDebug:
+                    print
+                    print
+                    print("############ NLP Report #3 - Topic Chain Index (" + person[1] + ")")
+                    self.__pprinter.pprint(chains)
+                report3.SaveToFile(person[1], person[0], chains)
 
-#        report4 = groupSynonymsTciReport.GroupSynonymsTci(self.__reportDatadir)
-#        report4.SetDialog(dialogPos)
-#        grouppedChains = report4.GroupTciByPerson()
-#        if self.__isDebug:
-#            print
-#            print
-#            print("############ NLP Report #4 - Group Topic Chain Index by person using synonyms")
-#            self.__pprinter.pprint(grouppedChains)
-#        report4.SaveToFile(grouppedChains)
-
+        synProvider = wordnetSyns.Wordnet()
+        synProvider.SetSimilarity(0.8)
+        report4 = groupSynonymsTciReport.GroupSynonymsTci(self.__reportDatadir)
+        report4.SetDialog(dialogPos)
+        report4.SetSynProvider(synProvider)
+        grouppedChains = report4.GroupTciByPerson()
+        if self.__isDebug:
+            print
+            print
+            print("############ NLP Report #4 - Group Topic Chain Index by person using synonyms")
+            self.__pprinter.pprint(grouppedChains)
+        report4.SaveToFile(grouppedChains)
 
 
     # this part puts POS tags to loaded file and saves them for later use
@@ -211,6 +229,6 @@ class Controller:
 
 
     def _test(self, fileName):
-    	syns = wordnetSyns.Wordnet()
-        synonyms = syns.GetSynonyms('dance')
-        print( synonyms )
+        synProvider = wordnetSyns.Wordnet()
+        synProvider.SetSimilarity(0.8)
+        self.__pprinter.pprint(synProvider.GetSynonyms('person'))

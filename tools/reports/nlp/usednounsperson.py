@@ -1,4 +1,5 @@
 import csv
+from nltk.corpus import stopwords
 
 from tools.dialogs import person as personDialog
 from tools.dialogs import helper as helperDialog
@@ -16,6 +17,7 @@ class UsedNounsPerson:
 		self.__nounPhrases = None
 		self.__synonymsProvider = None
 		self.__synonymSimilarity = 0.5
+		self.__stopwords = stopwords.words('english')
 
 
 	# sets dialog for this report
@@ -24,7 +26,7 @@ class UsedNounsPerson:
 
 
 	# sets synonyms provider for this report
-	def SetSynonymsProvider(slf, provider):
+	def SetSynonymsProvider(self, provider):
 		self.__synonymsProvider = provider
 
 
@@ -60,6 +62,9 @@ class UsedNounsPerson:
 
 		for phrase in self.__nounPhrases:
 			for word in phrase['nouns']:
+				if word in self.__stopwords: # skip stopwords
+					continue
+
 				if word in result[phrase['name']]['nouns'].keys():
 					result[phrase['name']]['nouns'][word] += 1
 				else:
