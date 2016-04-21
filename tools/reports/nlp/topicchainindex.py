@@ -48,8 +48,6 @@ class TopicChainIndex:
         if name != None:
             fileName = name + '_' + personName + ".csv"
 
-        print(fileName)
-
         with open(self.__outputDir + fileName, 'wb') as csvfile:
             writer = csv.writer(csvfile, delimiter = ',')
             writer.writerow(['Role', 'Name', 'Noun', 'Count', 'Start', 'Last', 'Length'])

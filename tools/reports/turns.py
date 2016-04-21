@@ -19,20 +19,20 @@ class Turns:
 		self.__dialog = newDialog
 
 
-	# calculates longest turns per each justice 
-	def CountWords(self):
+	# calculates longest turns per each justice
+	def Turns(self):
 		if self.__dialog == None:
 			return None
 
 		helper = dialogHelper.Helper()
 
 		peopleHandler = personDialog.Person()
-		people = helper.GetListPeople(self.__dialog.GetDialog(), True) 
-		
+		people = helper.GetListPeople(self.__dialog.GetDialog(), True)
+
 		res = {}
 		# prepare data structure
 		for personItem in people:
-			res['|'.join(personItem)] = peopleHandler.GetEmptyCountWordsPerson(personItem)
+			res['|'.join(personItem)] = peopleHandler.GetEmptyReportTurns(personItem, 0)
 
 		# walk through the dialog and calculate it
 		previousPerson = None
@@ -73,4 +73,3 @@ class Turns:
 			writer.writerow(['Role', 'Name', 'Turns'])
 			for row in data:
 				writer.writerow([row['role'], row['name'], row['turns']])
-

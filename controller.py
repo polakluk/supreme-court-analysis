@@ -188,15 +188,14 @@ class Controller:
         report3 = topicChainIndexReport.TopicChainIndex(self.__reportDatadir)
     	report3.SetDialog(dialogPos)
         for person in people:
-            if person[1] == 'KENNEDY':
-                nounsPerson = [ noun[0] for noun in nouns[person[1]]['nouns']]
-                chains = report3.CalculateTciPerson(person[1], person[0], nounsPerson)
-                if self.__isDebug:
-                    print
-                    print
-                    print("############ NLP Report #3 - Topic Chain Index (" + person[1] + ")")
-                    self.__pprinter.pprint(chains)
-                report3.SaveToFile(person[1], person[0], chains)
+            nounsPerson = [ noun[0] for noun in nouns[person[1]]['nouns']]
+            chains = report3.CalculateTciPerson(person[1], person[0], nounsPerson)
+            if self.__isDebug:
+                print
+                print
+                print("############ NLP Report #3 - Topic Chain Index (" + person[1] + ")")
+                self.__pprinter.pprint(chains)
+            report3.SaveToFile(person[1], person[0], chains)
 
         synProvider = wordnetSyns.Wordnet()
         synProvider.SetSimilarity(0.8)
