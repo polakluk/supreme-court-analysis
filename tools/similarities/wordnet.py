@@ -16,7 +16,7 @@ class Wordnet:
 
 
     # gets list of synonyms with their respective similarity index as a sorted list of
-	def GetSynonyms(self, word):
+	def GetSimilarWords(self, word):
 		synonyms = []
 
 		try:

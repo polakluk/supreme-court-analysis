@@ -15,7 +15,7 @@ class GroupSynonymsTci:
 	def __init__(self, reportsDir):
 		self.__outputDir = reportsDir
 		self.__dialog = None
-		self.__synProvider = None
+		self.__simProvider = None
 
 
 	# sets dialog for this report
@@ -23,9 +23,9 @@ class GroupSynonymsTci:
 		self.__dialog = newDialog
 
 
-	# sets synonyms provider
-	def SetSynProvider(self, provider):
-		self.__synProvider = provider
+	# sets similarity provider
+	def SetSimProvider(self, provider):
+		self.__simProvider = provider
 
 
 	# returns list with noun phrases
@@ -58,13 +58,13 @@ class GroupSynonymsTci:
 		merged = 0
 		for idxChain in chains.keys():
 			chain = chains[idxChain][0]
-			synonyms = self.__synProvider.GetSynonyms(chain['word'])
+			similar = self.__simnProvider.GetSimilarWords(chain['word'])
 			print(chain)
 			print("************** For Word - " + chain['word'])
-			print(synonyms)
-			chainSynonyms = [ chain['name'] + "|" + chain['role'] + '|' + syn for syn in synonyms ]
-			# there is a match for this synonym
-			for newChain in chainSynonyms:
+			print(similar)
+			chainSimilar = [ chain['name'] + "|" + chain['role'] + '|' + sim for sim in similar ]
+			# there is a match for this simialar word
+			for newChain in chainSimilar:
 				# do not check for the current chain
 				if newChain == idxChain:
 					continue

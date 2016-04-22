@@ -12,7 +12,7 @@ from tools.dialogs import container as dialogContainer
 from tools.dialogs import posdialog as dialogPosDialog
 from tools.dialogs import helper as dialogHelper
 from tools.pos import nltkpos as nltkPos
-from tools.synonyms import wordnet as wordnetSyns
+from tools.similarities import wordnet as wordnetSims
 
 # frequency reports
 from tools.reports import turns as turnsReport
@@ -187,28 +187,26 @@ class Controller:
 
         report3 = topicChainIndexReport.TopicChainIndex(self.__reportDatadir)
     	report3.SetDialog(dialogPos)
-        for person in people:
-            nounsPerson = [ noun[0] for noun in nouns[person[1]]['nouns']]
-            chains = report3.CalculateTciPerson(person[1], person[0], nounsPerson)
-            if self.__isDebug:
-                print
-                print
-                print("############ NLP Report #3 - Topic Chain Index (" + person[1] + ")")
-                self.__pprinter.pprint(chains)
-            report3.SaveToFile(person[1], person[0], chains)
+        report3.SetThreshold(3)
+        chains = report3.CalculateTci(nouns)
+        if self.__isDebug:
+            print
+            print
+            print("############ NLP Report #3 - Topic Chain Index (treshold = 3)")
+            self.__pprinter.pprint(chains)
+        report3.SaveToFile(chains)
 
-        synProvider = wordnetSyns.Wordnet()
-        synProvider.SetSimilarity(0.8)
+        simProvider = wordnetSims.Wordnet()
         report4 = groupSynonymsTciReport.GroupSynonymsTci(self.__reportDatadir)
         report4.SetDialog(dialogPos)
-        report4.SetSynProvider(synProvider)
-        grouppedChains = report4.GroupTciByPerson()
+        report4.SetSimProvider(simProvider)
+#        grouppedChains = report4.GroupTciByPerson()
         if self.__isDebug:
             print
             print
             print("############ NLP Report #4 - Group Topic Chain Index by person using synonyms")
-            self.__pprinter.pprint(grouppedChains)
-        report4.SaveToFile(grouppedChains)
+#            self.__pprinter.pprint(grouppedChains)
+#        report4.SaveToFile(grouppedChains)
 
 
     # this part puts POS tags to loaded file and saves them for later use

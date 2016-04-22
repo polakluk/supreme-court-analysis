@@ -32,11 +32,11 @@ class Turns:
 		res = {}
 		# prepare data structure
 		for personItem in people:
-			res['|'.join(personItem)] = peopleHandler.GetEmptyReportTurns(personItem, 0)
+			res['|'.join(personItem)] = 0
 
 		# walk through the dialog and calculate it
 		previousPerson = None
-		actCounter = 0
+		actCounter = 1
 		for part in self.__dialog.GetDialog():
 			# the report is only intersted in exchange between justices
 			if part['role'] == 'other':
@@ -48,10 +48,10 @@ class Turns:
 				actCounter += 1
 			else:
 				# the chain of talks jus broke, so keep track of this, if you need to
-				if res[actPerson] < actCounter:
-					res[actPerson] = actCounter
+				if res[previousPerson] < actCounter:
+					res[previousPerson] = actCounter
 
-				actCounter = 0 # reset counter
+				actCounter = 1 # reset counter
 
 			previousPerson = actPerson
 
