@@ -4,7 +4,7 @@ from tools.filehelper import FileHelper
 import re
 
 # this class tries to clean up text parsed from PDF
-class Basic:
+class Basic(object):
 
 	# constructor
 	def __init__(self, outputDir):
@@ -62,5 +62,5 @@ class Basic:
 			res = res.replace(u'—','-')
 			res = res.replace(u'‘','\'')
 			res = res.encode('ASCII')
-			
+
 			return res.strip()

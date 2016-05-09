@@ -8,8 +8,8 @@ import csv
 # it expect list of Person objects
 # REPORT Description:
 # The report returns list of pair of justices. The first part contains name of justice.
-# The second part contains name of justice who follows them  
-class MostFollow:
+# The second part contains name of justice who follows them
+class MostFollow(object):
 
 	# constructor
 	def __init__(self, reportsDir):
@@ -30,7 +30,7 @@ class MostFollow:
 		self.__interval_end = end
 
 
-	# returns the list of pair of justices 
+	# returns the list of pair of justices
 	def MostFollows(self):
 		if self.__dialog == None:
 			return None
@@ -38,7 +38,7 @@ class MostFollow:
 		helper = dialogHelper.Helper()
 		# prepare data structures
 		peopleHelper = personDialog.Person()
-		people = helper.GetListPeople(self.__dialog.GetDialog(), True) 
+		people = helper.GetListPeople(self.__dialog.GetDialog(), True)
 		res = {}
 
 		# get data about followe ratio for eah justice
@@ -63,11 +63,11 @@ class MostFollow:
 						bestKey = keyFollow
 
 			if bestKey == None:
-				res[key] = peopleHelper.GetEmptyReportMostFollow( key.split('|'), 
+				res[key] = peopleHelper.GetEmptyReportMostFollow( key.split('|'),
 																0.0,
 																None)
 			else:
-				res[key] = peopleHelper.GetEmptyReportMostFollow( key.split('|'), 
+				res[key] = peopleHelper.GetEmptyReportMostFollow( key.split('|'),
 																ratios[key][bestKey],
 																bestKey)
 

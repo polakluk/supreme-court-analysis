@@ -9,7 +9,7 @@ from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
 
 
 # this class reads pdf with oral argument and is supposed to simply turn it into a plain text
-class Pdf:
+class Pdf(object):
 
 	# constructor
 	def __init__(self, outputDir):

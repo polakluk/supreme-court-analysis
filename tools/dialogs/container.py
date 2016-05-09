@@ -3,7 +3,7 @@ from tools.dialogs import person as personDialog
 
 # this class handles list of turns in dialog
 # the list of represented as lis ot Person objects
-class Container:
+class Container(object):
 
 	# constructor
 	def __init__(self):

@@ -7,7 +7,7 @@ from tools.reports.nlp import nounphraseparts as nounPhrasePartsReport
 # this class prepares reports from loaded dialog
 # REPORT Description:
 # The report returns list of questions asked by each person
-class QuestionsAsked:
+class QuestionsAsked(object):
 
 	# constructor
 	def __init__(self, reportsDir):

@@ -8,8 +8,7 @@ from tools.reports.nlp import usednounsperson as usedNounsPersonReport
 # REPORT Description:
 # The report returns list of nouns grouped by synonyms.
 # Under the hood, it takes TCI for each person and concats them
-# The report still does this operation for each person separately
-class GroupSynonymsTci:
+class GroupSynonymsTci(object):
 
 	# constructor
 	def __init__(self, reportsDir):
@@ -29,7 +28,8 @@ class GroupSynonymsTci:
 
 
 	# returns list with noun phrases
-	def GroupTciByPerson(self):
+	# param chains - list of chains from report TopicChainIndex
+	def GroupTci(self, chainsReport):
 		people = personDialog.Person()
 		# dont do anything unless everything is properly set up
 		parts = self.__dialog.GetDialogPos()
@@ -37,7 +37,6 @@ class GroupSynonymsTci:
 			return None
 
 		helper = helperDialog.Helper()
-		listPeople = helper.GetListPeople(self.__dialog.GetDialog())
 		result = []
 		# first, extract nouns
 		report1 = usedNounsPersonReport.UsedNounsPerson(self.__outputDir)
@@ -45,20 +44,15 @@ class GroupSynonymsTci:
 		nouns = report1.FindUsedNounsRaw()
 
 		# then, create topic chains
-		report2 = topicChainIndexReport.TopicChainIndex(self.__outputDir)
-		report2.SetDialog(self.__dialog)
 		chains = {}
-		for person in listPeople:
-			for noun in nouns[person[1]]['nouns']:
-				found = report2.CalculateTciPerson(person[1], person[0], [[noun[0]]])
-				if found != None:
-					chains[person[1]+'|'+person[0]+"|" + noun[0]] = found[0]
+		for record in chainsReport:
+			if record != None:
+				chains[row['word']] = row['result']
 
 		# now, join topic chains using synonyms
 		merged = 0
 		for idxChain in chains.keys():
-			chain = chains[idxChain][0]
-			similar = self.__simnProvider.GetSimilarWords(chain['word'])
+			similar = self.__simnProvider.GetSimilarWords(idxChain)
 			print(chain)
 			print("************** For Word - " + chain['word'])
 			print(similar)

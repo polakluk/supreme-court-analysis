@@ -1,7 +1,7 @@
 import os
 
 
-class FileHelper:
+class FileHelper(object):
 	def GetFileName(self, file):
 		path = file.split(os.path.sep)
 		fileNameParts = path[-1].split('.')

@@ -6,7 +6,7 @@ from tools.dialogs import helper as dialogHelper
 # it expect list of Person objects
 # REPORT Description:
 # The report counts turns per person in dialog and stores their position and length
-class TurnsPositionLength:
+class TurnsPositionLength(object):
 
 	# constructor
 	def __init__(self, reportsDir):

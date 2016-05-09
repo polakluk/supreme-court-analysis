@@ -12,7 +12,7 @@ import ctypes
 MagickEvaluateImage = wand.api.library.MagickEvaluateImage
 MagickEvaluateImage.argtypes = [ctypes.c_void_p, ctypes.c_int, ctypes.c_double]
 
-class TesseractOcr:
+class TesseractOcr(object):
 
 	# constructor
 	def __init__(self, outputDir, isDebug = True):

@@ -1,7 +1,7 @@
 
 
 # wrapper class representing one person
-class Person:
+class Person(object):
 
 	# creates an empty person for dialog
 	def GetEmpty(self):

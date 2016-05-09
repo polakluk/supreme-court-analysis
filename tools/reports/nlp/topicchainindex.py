@@ -7,7 +7,7 @@ from tools.dialogs import person as personDialog
 # this class prepares reports from loaded dialog
 # REPORT Description:
 # The report returns list of topic chain indices for selected person and subset of words
-class TopicChainIndex:
+class TopicChainIndex(object):
 
     # constructor
     def __init__(self, reportsDir):

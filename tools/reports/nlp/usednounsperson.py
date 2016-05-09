@@ -8,7 +8,7 @@ from tools.reports.nlp import nounphraseparts as nounPhrasePartsReport
 # this class prepares reports from loaded dialog
 # REPORT Description:
 # The report returns list of used nouns per person with their respective counts. For more accurate results taking synonyms into account, it uses synonyms provider
-class UsedNounsPerson:
+class UsedNounsPerson(object):
 
 	# constructor
 	def __init__(self, reportsDir):

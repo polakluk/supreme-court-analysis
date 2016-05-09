@@ -1,5 +1,5 @@
 # Helper class for dialog containers
-class Helper:
+class Helper(object):
 
 	# get list of people who participate in the dialog
 	# returns list of arrays in form [0 => role, 1 => name]

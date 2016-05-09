@@ -8,7 +8,7 @@ from tools.dialogs import helper as dialogHelper
 # it expect list of Person objects
 # REPORT Description:
 # The report counts the number of words per person
-class MostWords:
+class MostWords(object):
 
 	# constructor
 	def __init__(self, reportsDir):
@@ -21,7 +21,7 @@ class MostWords:
 		self.__dialog = newDialog
 
 
-	# calculates longest turns per each justice 
+	# calculates longest turns per each justice
 	def CountWords(self):
 		if self.__dialog == None:
 			return None
@@ -29,8 +29,8 @@ class MostWords:
 		helper = dialogHelper.Helper()
 
 		peopleHandler = personDialog.Person()
-		people = helper.GetListPeople(self.__dialog.GetDialog()) 
-		
+		people = helper.GetListPeople(self.__dialog.GetDialog())
+
 		res = {}
 		# prepare data structure
 		for personItem in people:
@@ -62,4 +62,3 @@ class MostWords:
 			writer.writerow(['Role', 'Name', 'Words', 'Turns', 'Words per Turn'])
 			for row in data:
 				writer.writerow([row['role'], row['name'], row['words'], row['turns'], row['wordsPerTurn']])
-

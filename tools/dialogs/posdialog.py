@@ -4,7 +4,7 @@ from tools.filehelper import FileHelper
 
 
 # This class takes care of POS tagging whole dialog, saving the tags and loading it
-class PosDialog:
+class PosDialog(object):
 
 	# constructor
 	def __init__(self, parsedDir, isDebug = False):

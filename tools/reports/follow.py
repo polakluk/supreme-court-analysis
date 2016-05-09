@@ -8,8 +8,8 @@ from tools.dialogs import person as personDialog
 # REPORT Description:
 # The report returns list of followers of justices. The first part contains name of justice.
 # The second part contains name of justice who follows them.
-# The third part represents position in dialog, when the exchange occured  
-class Follow:
+# The third part represents position in dialog, when the exchange occured
+class Follow(object):
 
 	# constructor
 	def __init__(self, reportsDir):
@@ -22,7 +22,7 @@ class Follow:
 		self.__dialog = newDialog
 
 
-	# returns the list of pair of justices 
+	# returns the list of pair of justices
 	def Follows(self):
 		peopleHandler = personDialog.Person()
 		helper = dialogHelper.Helper()
@@ -43,7 +43,7 @@ class Follow:
 			if previousPerson != None and previousPerson != actPerson:
 				# this person follows somebody
 				position = actJusticePart / numPartsJustices
-				res.append(peopleHandler.GetEmptyReportFollows( actPerson.split('|'), 
+				res.append(peopleHandler.GetEmptyReportFollows( actPerson.split('|'),
 																previousPerson,
 																position ))
 

@@ -4,7 +4,7 @@ from nltk.corpus import stopwords
 import string
 
 # This class is a wrapper for NLTK POS tagger
-class NltkPos:
+class NltkPos(object):
 
 	# constructor
 	def __init__(self):

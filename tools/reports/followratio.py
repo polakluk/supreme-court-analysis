@@ -9,7 +9,7 @@ from tools.reports import follow as followReport
 # REPORT Description:
 # The report returns dictionary of justices. For each item in dictionary, it returns a dictionary
 # containing names of all other justices and ratio, how often they follow the justice
-class FollowRatio:
+class FollowRatio(object):
 
 	# constructor
 	def __init__(self, reportsDir):
@@ -30,7 +30,7 @@ class FollowRatio:
 		self.__interval_end = end
 
 
-	# returns the list of pair of justices 
+	# returns the list of pair of justices
 	def CalculateFollowRatio(self):
 		if self.__dialog == None:
 			return None
@@ -38,20 +38,20 @@ class FollowRatio:
 		helper = dialogHelper.Helper()
 		peopleHandler = personDialog.Person()
 		people = helper.GetListPeople(self.__dialog.GetDialog(), True)
-		numPartsJustices = float(len(people)) 
-		
+		numPartsJustices = float(len(people))
+
 		report = followReport.Follow(self.__outputDir)
 		report.SetDialog(self.__dialog)
 		follows = report.Follows()
 		# filter only interesting part for this report, if needed
 		if self.__interval_start != 0 or self.__interval_end != 1.0:
-			follows = [p for p in follows if p['position'] >= self.__interval_start and  
+			follows = [p for p in follows if p['position'] >= self.__interval_start and
 											p['position'] <= self.__interval_end]
 
 		res = {}
 		# prepare data structure
 		for personItem in people:
-			numFollows = len([item for item in follows if item['name'] == personItem[1] and 
+			numFollows = len([item for item in follows if item['name'] == personItem[1] and
 															item['role'] == personItem[0]])
 			res['|'.join(personItem)] = self.__prepareDictionary(personItem[1], numFollows, people )
 

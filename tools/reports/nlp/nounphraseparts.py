@@ -4,7 +4,7 @@ import numpy as np
 # this class prepares reports from loaded dialog
 # REPORT Description:
 # The report returns list of noun-related words in each sentence per dialog part
-class NounPhraseParts:
+class NounPhraseParts(object):
 
 	# constructor
 	def __init__(self, reportsDir):

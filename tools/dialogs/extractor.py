@@ -3,8 +3,8 @@ import csv
 from tools.dialogs import person as personDialog
 from tools.filehelper import FileHelper
 
-# this class receives cleaned text and extract    
-class Extractor:
+# this class receives cleaned text and extract
+class Extractor(object):
 
 	# constructor
 	def __init__(self, outputDir, isDebug):

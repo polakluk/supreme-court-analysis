@@ -6,7 +6,7 @@ from tools.dialogs import helper as dialogHelper
 # it expect list of Person objects
 # REPORT Description:
 # The report counts the longest chain of question asked by each justice
-class Turns:
+class Turns(object):
 
 	# constructor
 	def __init__(self, reportsDir):
