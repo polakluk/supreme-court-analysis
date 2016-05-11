@@ -52,6 +52,8 @@ class Base(object):
         else:
             if taskName in self.availableTask.keys():
                 self.availableTask[taskName]()
+            elif self.debug:
+                self.pprint.pprint("Task '" + taskName + "' was not found")
 
         if self.timeIt:
             tEnd = time.time()
