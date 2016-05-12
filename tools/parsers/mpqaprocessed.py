@@ -8,7 +8,7 @@ class MpqaProcessed(basecorpus.BaseCorpus):
     def __init__(self):
         self.defaultFileNameOrig = './corpora/mpqa-clues/subjectivity-clues.txt'
         self.defaultFileNameProcessed = './corpora/mpqa-clues/subjectivity-clues-new.csv'
-        self.columns = ['word', 'type', 'pos', 'stemmed', 'priorpolarity']
+        self.columns = ['entry', 'type', 'pos', 'stemmed', 'priorpolarity']
 
 
     # reads the file and returns pandas DataFrame

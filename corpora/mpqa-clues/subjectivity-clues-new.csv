@@ -1,4 +1,4 @@
-word,type,pos,stemmed,priorpolarity
+entry,type,pos,stemmed,priorpolarity
 abandoned,weaksubj,adj,n,negative
 abandonment,weaksubj,noun,n,negative
 abandon,weaksubj,verb,y,negative

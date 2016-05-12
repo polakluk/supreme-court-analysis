@@ -44,6 +44,10 @@ class GeneralInquirer(basecorpus.BaseCorpus):
             filterData['entry'] = [rec[0] for rec in filterData.index.values ]  # now, entry can be turned back into a column
             filterData['othtags'] = [rec[1] for rec in filterData.index.values ]  # now, even ontho tags can be turned back into a column
             filterData.reset_index(inplace = True, drop = True ) # and index for rows can be dropped
+
+            # escape sharp postfixes from entries
+            filterData['entry'] = filterData['entry'].map(lambda cell: (cell.split('#'))[0] if '#' in cell else cell)
+
             # convert everything to lowercase
             for col in self.filterHeader:
                 filterData[col] = filterData[col].map(lambda cell: cell if type(cell)!=str else cell.lower())
