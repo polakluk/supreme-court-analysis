@@ -14,11 +14,11 @@ class Mpqa(basecorpus.BaseCorpus):
         self.defaultFileNameProcessed = '.'+self.sepDir+'corpora'+self.sepDir+'mpqa'+self.sepDir+'mpqa.csv'
         self.defaultFileNameProcessedAnnots = '.'+self.sepDir+'corpora'+self.sepDir+'mpqa'+self.sepDir+'mpqa-annots.csv'
         self.columnsSent = ['docName', 'dirName', 'idx', 'startByte', 'endByte', 'sentLen', 'text']
-        self.columnsAnnotations = ['docName', 'dirName', 'idx', 'type', 'startByte', 'endByte', 'wordLen', 'text', 'intensity', 'polarity', 'expression-intensity', 'attitude-type', 'attitude-uncertain']
+        self.columnsAnnotations = ['docName', 'dirName', 'idx', 'type', 'startByte', 'endByte', 'wordLen', 'text', 'intensity', 'polarity', 'expression-intensity', 'attitude-type', 'attitude-uncertain', 'nested-source']
         # annotations which we are interested in
         self.interestingAnnotations = ['GATE_expressive-subjectivity', 'GATE_direct-subjective', 'GATE_attitude']
         # markings for optional attributes
-        self.optionalAttributes = ['intensity="', 'polarity="', 'expression-intensity="', 'attitude-type="', 'attitude-uncertain="']
+        self.optionalAttributes = ['intensity="', 'polarity="', 'expression-intensity="', 'attitude-type="', 'attitude-uncertain="', 'nested-source="']
         self.minLenAnnotation = 2
 
 
@@ -134,7 +134,6 @@ class Mpqa(basecorpus.BaseCorpus):
                                 endPattern = parts[4].find('"', posPattern + len(pattern)+ 1)
                                 parsed[pattern[:-2]] = parts[4][posPattern + len(pattern):endPattern]
 
-
                         record = {
                                 'docName' : fTuple[1], # name of document
                                 'dirName' : fTuple[0], # source directory
@@ -153,6 +152,7 @@ class Mpqa(basecorpus.BaseCorpus):
 
                 return pd.DataFrame(annotations, columns = self.columnsAnnotations) # return it as a DataFrame
         return None # just safety measurement
+
 
     # saves the data with header to a file in CSV format
     def saveFileCsvAnnotations(self, data, fileName):
