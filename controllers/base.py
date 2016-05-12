@@ -12,7 +12,7 @@ class Base(object):
         self.pprint =  pprinter
         self.pathSeparator = os.path.sep
         self.parsedDataDir = "."+self.pathSeparator+"parsed-data"+self.pathSeparator
-        self.reportDatadir = "."+self.pathSeparator+"report-data"+self.pathSeparator
+        self.reportDataDir = "."+self.pathSeparator+"report-data"+self.pathSeparator
         self.corporaDir = "."+self.pathSeparator+"corpora"+self.pathSeparator
         self.availableTask = {}
         self.parentArgParse = argparse

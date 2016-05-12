@@ -51,7 +51,7 @@ class Reports(controllers.base.Base):
     	dialog = dialogContainer.Container()
     	dialog.LoadFromFile(fileName)
 
-    	report1 = turnsReport.Turns(self.reportDatadir)
+    	report1 = turnsReport.Turns(self.reportDataDir)
     	report1.SetDialog(dialog)
     	data = report1.Turns()
     	if self.debug:
@@ -59,7 +59,7 @@ class Reports(controllers.base.Base):
     		self.pprint.pprint(data)
     	report1.SaveToFile(data)
 
-    	report2 = followReport.Follow(self.reportDatadir)
+        report2 = followReport.Follow(self.reportDataDir)
     	report2.SetDialog(dialog)
     	data = report2.Follows()
     	if self.debug:
@@ -69,7 +69,7 @@ class Reports(controllers.base.Base):
     		self.pprint.pprint(data)
     	report2.SaveToFile(data)
 
-    	report3 = followRatioReport.FollowRatio(self.reportDatadir)
+    	report3 = followRatioReport.FollowRatio(self.reportDataDir)
     	report3.SetDialog(dialog)
     #	report3.SetInterval(0.2, 0.5)
     	data = report3.CalculateFollowRatio()
@@ -80,7 +80,7 @@ class Reports(controllers.base.Base):
     		self.pprint.pprint(data)
     	report3.SaveToFile(data)
 
-    	report4 = mostFollowReport.MostFollow(self.reportDatadir)
+        report4 = mostFollowReport.MostFollow(self.reportDataDir)
     	report4.SetDialog(dialog)
     	report4.SetInterval(0.2, 0.7)
     	data = report4.MostFollows()
@@ -91,7 +91,7 @@ class Reports(controllers.base.Base):
     		self.pprint.pprint(data)
     	report4.SaveToFile(data)
 
-    	report5 = turnsPositionLengthReport.TurnsPositionLength(self.reportDatadir)
+    	report5 = turnsPositionLengthReport.TurnsPositionLength(self.reportDataDir)
     	report5.SetDialog(dialog)
     #		report5.SetInterval(0.2, 0.7)
     	data = report5.AllTurns()
@@ -102,7 +102,7 @@ class Reports(controllers.base.Base):
     		self.pprint.pprint(data)
     	report5.SaveToFile(data)
 
-        report6 = mostWordsReport.MostWords(self.reportDatadir)
+        report6 = mostWordsReport.MostWords(self.reportDataDir)
         report6.SetDialog(dialog)
         data = report6.CountWords()
         if self.debug:
@@ -121,13 +121,13 @@ class Reports(controllers.base.Base):
             self.reportDatadir = args.outputDir
 
         helper = dialogHelper.Helper()
-    	dialogPos = dialogPosDialog.PosDialog(self.reportDatadir)
+    	dialogPos = dialogPosDialog.PosDialog(self.reportDataDir)
     	dialogPos.LoadFromFile(fileName)
         dialogPos.SetDialog( helper.AssignPositionsPartsDialog( dialogPos.GetDialog() ) )
 #        self.__pprinter.pprint(dialogPos.GetDialog())
         people = helper.GetListPeople(dialogPos.GetDialog())
 
-    	report1 = nounPhrasePartsReport.NounPhraseParts(self.reportDatadir)
+    	report1 = nounPhrasePartsReport.NounPhraseParts(self.reportDataDir)
     	report1.SetDialog(dialogPos)
 
 #    	nouns = report1.ExtractNounPhrases()
@@ -136,7 +136,7 @@ class Reports(controllers.base.Base):
     		self.pprint.pprint("")
     		self.pprint.pprint("############ NLP Report #1 - Noun Phrases Parts")
 
-    	report2 = usedNounsPersonReport.UsedNounsPerson(self.reportDatadir)
+    	report2 = usedNounsPersonReport.UsedNounsPerson(self.reportDataDir)
     	report2.SetDialog(dialogPos)
 
     	nouns = report2.FindUsedNounsRaw()
@@ -147,7 +147,7 @@ class Reports(controllers.base.Base):
 #            self.__pprinter.pprint(nouns)
         report2.SaveToFile(nouns)
 
-        report3 = topicChainIndexReport.TopicChainIndex(self.reportDatadir)
+        report3 = topicChainIndexReport.TopicChainIndex(self.reportDataDir)
     	report3.SetDialog(dialogPos)
         report3.SetThreshold(3)
         chains = report3.CalculateTci(nouns)
@@ -160,7 +160,7 @@ class Reports(controllers.base.Base):
 
         simProvider = wordnetLinSyns.Lin()
         simProvider.SetSimilarity(0.1)
-        report4 = groupSynonymsTciReport.GroupSynonymsTci(self.reportDatadir)
+        report4 = groupSynonymsTciReport.GroupSynonymsTci(self.reportDataDir)
         report4.SetDialog(dialogPos)
         report4.SetSimProvider(simProvider)
         grouppedChains = report4.GroupTci(chains)

@@ -1,4 +1,5 @@
 import controllers.base
+import re
 
 class Test(controllers.base.Base):
 
@@ -12,4 +13,9 @@ class Test(controllers.base.Base):
 
     # method for testing code and short experiments
     def _test(self):
-        self.pprint.pprint("Here")
+        testText = """He
+                proposed inserting CIA teams into Afghanistan to work with Afghan warlords who would
+                join the fight against al Qaeda."""
+
+        print(testText)
+        print(re.sub('\s+', ' ', testText))

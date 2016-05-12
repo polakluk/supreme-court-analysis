@@ -5,8 +5,9 @@ import pandas as pd
 class GeneralInquirer(basecorpus.BaseCorpus):
     # constructor
     def __init__(self):
-        self.defaultFileNameOrig = './corpora/general-inquirer/general-inquirer.txt'
-        self.defaultFileNameProcessed = './corpora/general-inquirer/general-inquirer-new.csv'
+        basecorpus.BaseCorpus.__init__(self)
+        self.defaultFileNameOrig = '.'+self.sepDir+'corpora'+self.sepDir+'general-inquirer'+self.sepDir+'general-inquirer.txt'
+        self.defaultFileNameProcessed = '.'+self.sepDir+'corpora'+self.sepDir+'general-inquirer'+self.sepDir+'general-inquirer-new.csv'
         self.filterHeader = ['entry', # word
                             'positiv', # clearly positive words (except for 'yes' words)
                             'negativ', # clearly negative words (except for 'no' words)

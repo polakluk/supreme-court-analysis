@@ -2,12 +2,13 @@ from tools.parsers import basecorpus
 import pandas as pd
 import numpy as np
 
-# this class reads General Inquirer corpus and turns it into a proper CSV file
+# this class reads MPQA corpus subjective clues and turns them into a proper CSV file
 class MpqaProcessed(basecorpus.BaseCorpus):
     # constructor
     def __init__(self):
-        self.defaultFileNameOrig = './corpora/mpqa-clues/subjectivity-clues.txt'
-        self.defaultFileNameProcessed = './corpora/mpqa-clues/subjectivity-clues-new.csv'
+        basecorpus.BaseCorpus.__init__(self)
+        self.defaultFileNameOrig = '.'+self.sepDir+'corpora'+self.sepDir+'mpqa-clues'+self.sepDir+'subjectivity-clues.txt'
+        self.defaultFileNameProcessed = '.'+self.sepDir+'corpora'+self.sepDir+'mpqa-clues'+self.sepDir+'subjectivity-clues-new.csv'
         self.columns = ['entry', 'type', 'pos', 'stemmed', 'priorpolarity']
 
 

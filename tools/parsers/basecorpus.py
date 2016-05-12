@@ -1,8 +1,14 @@
 import pandas as pd
 import csv
+import os
 
 # this class reads a corpus and turns it into a proper CSV file
 class BaseCorpus(object):
+
+    # constructor
+    def __init__(self):
+        self.sepDir = os.path.sep
+
 
     # saves the data with header to a file in CSV format
     def saveFileCsv(self, data, fileName):
