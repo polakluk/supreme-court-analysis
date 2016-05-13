@@ -7,7 +7,7 @@ class GeneralInquirer(basecorpus.BaseCorpus):
     def __init__(self):
         basecorpus.BaseCorpus.__init__(self)
         self.defaultFileNameOrig = '.'+self.sepDir+'corpora'+self.sepDir+'general-inquirer'+self.sepDir+'general-inquirer.txt'
-        self.defaultFileNameProcessed = '.'+self.sepDir+'corpora'+self.sepDir+'general-inquirer'+self.sepDir+'general-inquirer-new.csv'
+        self.defaultFileNameProcessed = '.'+self.sepDir+'corpora'+self.sepDir+'processed'+self.sepDir+'general-inquirer-new.csv'
         self.filterHeader = ['entry', # word
                             'positiv', # clearly positive words (except for 'yes' words)
                             'negativ', # clearly negative words (except for 'no' words)

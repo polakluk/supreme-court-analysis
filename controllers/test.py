@@ -13,9 +13,7 @@ class Test(controllers.base.Base):
 
     # method for testing code and short experiments
     def _test(self):
-        testText = """He
-                proposed inserting CIA teams into Afghanistan to work with Afghan warlords who would
-                join the fight against al Qaeda."""
-
-        print(testText)
-        print(re.sub('\s+', ' ', testText))
+        line = '1394	56,94	string	GATE_direct-subjective	 expression-intensity="neutral" insubstantial="C2" intensity="medium" nested-source="w, implicit" polarity="" attitude-link="greatAccomplish" '
+        pos = line.find('polarity="')
+        lenPolarity = len('polarity="')
+        print(line[pos+lenPolarity:]) 

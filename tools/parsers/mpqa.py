@@ -11,14 +11,14 @@ class Mpqa(basecorpus.BaseCorpus):
     def __init__(self):
         basecorpus.BaseCorpus.__init__(self)
         self.defaultCorpusDir = '.'+self.sepDir+'corpora'+self.sepDir+'mpqa'+self.sepDir
-        self.defaultFileNameProcessed = '.'+self.sepDir+'corpora'+self.sepDir+'mpqa'+self.sepDir+'mpqa.csv'
-        self.defaultFileNameProcessedAnnots = '.'+self.sepDir+'corpora'+self.sepDir+'mpqa'+self.sepDir+'mpqa-annots.csv'
+        self.defaultFileNameProcessed = '.'+self.sepDir+'corpora'+self.sepDir+'processed'+self.sepDir+'mpqa-sentences.csv'
+        self.defaultFileNameProcessedAnnots = '.'+self.sepDir+'corpora'+self.sepDir+'processed'+self.sepDir+'mpqa-annots.csv'
         self.columnsSent = ['docName', 'dirName', 'idx', 'startByte', 'endByte', 'sentLen', 'text']
-        self.columnsAnnotations = ['docName', 'dirName', 'idx', 'type', 'startByte', 'endByte', 'wordLen', 'text', 'intensity', 'polarity', 'expression-intensity', 'attitude-type', 'attitude-uncertain', 'nested-source']
+        self.columnsAnnotations = ['docName', 'dirName', 'idx', 'type', 'startByte', 'endByte', 'wordLen', 'text', 'intensity', 'polarity', 'expression-intensity', 'attitude-type', 'attitude-uncertain']
         # annotations which we are interested in
         self.interestingAnnotations = ['GATE_expressive-subjectivity', 'GATE_direct-subjective', 'GATE_attitude']
         # markings for optional attributes
-        self.optionalAttributes = ['intensity="', 'polarity="', 'expression-intensity="', 'attitude-type="', 'attitude-uncertain="', 'nested-source="']
+        self.optionalAttributes = ['intensity="', 'polarity="', 'expression-intensity="', 'attitude-type="', 'attitude-uncertain="']
         self.minLenAnnotation = 2
 
 
@@ -131,7 +131,7 @@ class Mpqa(basecorpus.BaseCorpus):
                         for pattern in self.optionalAttributes:
                             posPattern = parts[4].find(pattern)
                             if posPattern > -1 : #found this optional attribute there
-                                endPattern = parts[4].find('"', posPattern + len(pattern)+ 1)
+                                endPattern = parts[4].find('"', posPattern + len(pattern))
                                 parsed[pattern[:-2]] = parts[4][posPattern + len(pattern):endPattern]
 
                         record = {
