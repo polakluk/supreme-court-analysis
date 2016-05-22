@@ -1,5 +1,6 @@
 from tools.parsers import basecorpus
 import pandas as pd
+import numpy as np
 
 #tools
 from os import walk
@@ -13,8 +14,8 @@ class Mpqa(basecorpus.BaseCorpus):
         self.defaultCorpusDir = '.'+self.sepDir+'corpora'+self.sepDir+'mpqa'+self.sepDir
         self.defaultFileNameProcessed = '.'+self.sepDir+'corpora'+self.sepDir+'processed'+self.sepDir+'mpqa-sentences.csv'
         self.defaultFileNameProcessedAnnots = '.'+self.sepDir+'corpora'+self.sepDir+'processed'+self.sepDir+'mpqa-annots.csv'
-        self.columnsSent = ['docName', 'dirName', 'idx', 'startByte', 'endByte', 'sentLen', 'text']
-        self.columnsAnnotations = ['docName', 'dirName', 'idx', 'type', 'startByte', 'endByte', 'wordLen', 'text', 'intensity', 'polarity', 'expression-intensity', 'attitude-type', 'attitude-uncertain']
+        self.columnsSent = ['docName', 'dirName', 'idx', 'startByte', 'endByte', 'sentLen', 'annotsCount', 'text']
+        self.columnsAnnotations = ['docName', 'dirName', 'idx', 'type', 'startByte', 'endByte', 'sentRow', 'wordLen', 'text', 'intensity', 'polarity', 'expression-intensity', 'attitude-type', 'attitude-uncertain']
         # annotations which we are interested in
         self.interestingAnnotations = ['GATE_expressive-subjectivity', 'GATE_direct-subjective', 'GATE_attitude']
         # markings for optional attributes
@@ -46,21 +47,30 @@ class Mpqa(basecorpus.BaseCorpus):
         # first, get filenames of all documents in corpus
         documents = self._getListDocumentsCorpus()
 
+        # prepare reader for annotations
+        self.mpqaAnnots= self.readFileCsv(self.defaultFileNameProcessedAnnots)
+
         # now, process the documents one by one and generate sentences
         resDataFrame = pd.DataFrame([], columns = self.columnsSent)
+        offset = 0
         for doc in documents:
-            processedData = self._readFileSentences(doc)
+            processedData = self._readFileSentences(doc, offset)
+            offset += processedData.shape[0] # move offset for sentences
             resDataFrame = pd.concat([resDataFrame, processedData])
+
+        # save updated annotations
+        self.saveFileCsvAnnotations(self.mpqaAnnots, None)
         return resDataFrame
 
 
     # reads the file and returns pandas DataFrame with annotated sentences
-    def _readFileSentences(self, fTuple ):
+    def _readFileSentences(self, fTuple, offset ):
         sents = []
         # format ./docs/{tuple[0]}/{tuple[1]}
         fNameDoc = self.defaultCorpusDir+'docs'+self.sepDir+fTuple[0]+self.sepDir+fTuple[1]
         # format ./man_anns/{tuple[0]}/{tuple[1]}/gatesentences.mpqa.2.0
         fNameSentencesFile = self.defaultCorpusDir+'man_anns'+self.sepDir+fTuple[0]+self.sepDir+fTuple[1]+self.sepDir+"gatesentences.mpqa.2.0"
+        offsetDocument = 0
         with open(fNameDoc, 'r') as docFile:
             with open(fNameSentencesFile, 'r') as sentFile:
                 for line in sentFile: # go line by line
@@ -75,6 +85,9 @@ class Mpqa(basecorpus.BaseCorpus):
                     sentLen = int(pos[1]) - int(pos[0]) # get length of the sentence
                     sent = docFile.read(sentLen).strip() # read the sentence
                     sentClean = re.sub('\s+', ' ', sent) # clean up multiple whitespaces in sentences
+
+                    # count annotations
+                    annotsDataframe = self.mpqaAnnots.loc[(self.mpqaAnnots['docName'] == str(fTuple[1])) & (self.mpqaAnnots['dirName'] == str(fTuple[0])) & (self.mpqaAnnots['startByte'] >= int(pos[0]) ) & (self.mpqaAnnots['endByte'] <= int(pos[1])), : ]
                     record = {
                                 'docName' : fTuple[1], # name of document
                                 'dirName' : fTuple[0], # source directory
@@ -82,9 +95,13 @@ class Mpqa(basecorpus.BaseCorpus):
                                 'startByte' : pos[0], # start byte
                                 'endByte' : pos[1], # end byte
                                 'sentLen' : sentLen,
+                                'annotsCount' : annotsDataframe.shape[0], # number of annotations for this sentence
                                 'text' : sentClean
                             }
                     sents.append(record)
+                    # update sentence row number for annotations
+                    self.mpqaAnnots.loc[annotsDataframe.index,['sentRow']] = offset + offsetDocument
+                    offsetDocument += 1
 
                 return pd.DataFrame(sents, columns = self.columnsSent) # return it as a DataFrame
         return None # just safety measurement
@@ -141,6 +158,7 @@ class Mpqa(basecorpus.BaseCorpus):
                                 'type' : parts[3], # type of annotation
                                 'startByte' : pos[0], # start byte
                                 'endByte' : pos[1], # end byte
+                                'sentRow' : -1, # sentence row number (will be added when sentences are read)
                                 'wordLen' : wordLen,
                                 'text' : wordClean
                             }
