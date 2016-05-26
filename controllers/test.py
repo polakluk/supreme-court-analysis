@@ -1,5 +1,6 @@
 import controllers.base
 import re
+from tools.parsers import negation as negationParser
 
 class Test(controllers.base.Base):
 
@@ -13,7 +14,7 @@ class Test(controllers.base.Base):
 
     # method for testing code and short experiments
     def _test(self):
-        line = '1394	56,94	string	GATE_direct-subjective	 expression-intensity="neutral" insubstantial="C2" intensity="medium" nested-source="w, implicit" polarity="" attitude-link="greatAccomplish" '
-        pos = line.find('polarity="')
-        lenPolarity = len('polarity="')
-        print(line[pos+lenPolarity:]) 
+        parser = negationParser.Negation()
+        data = parser.readFileRaw(None)
+        parser.saveFileCsv(data, None)
+        print(data)

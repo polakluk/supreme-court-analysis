@@ -8,15 +8,9 @@ from tools.sentimentanalysis import preparation
 #
 # Step 1
 #
-# Description: Decide, whether the sentiment can be measured
-# Result: 0 -> No measured sentiment,
-#           1 -> There is some sentiment
-#
-# Step 2
-#
 # Description: Decide, whether the sentiment is (both positive and negative in sentence) or measurable
-# Result:  0 -> both positive and negative in sentence (go to Step 3B)
-#           1 -> measurable (measure it in Step 3B)
+# Result:  0 -> both positive and negative in sentence (go to Step 2A)
+#           1 -> measurable (measure it in Step 2B)
 #
 # Step 3A
 # Description: Measure intensity of mixed sentiment in sentence
@@ -33,13 +27,13 @@ class Sentiment(controllers.base.Base):
         controllers.base.Base.__init__(self, pprinter, argParse)
         self.availableTask = {
                                 'prepare-training-data': self._prepareTrainingData,
+                                'extract-features' : self._extractFeatures
         }
-        self.defaultFileNameSentimentSentences = '.'+self.pathSeparator+'corpora'+self.pathSeparator+'processed'+self.pathSeparator+'sentiment-sentences.csv'
 
 
     # initializes its own parser
     def initializeArgumentParser(self):
-        # no optional argument added to command-line
+        self.argParser.add_argument('-fout', help="Optional output filename for Feature files", dest="outputFile", required = False)
         self.parserInitialized = True
 
 
@@ -47,5 +41,19 @@ class Sentiment(controllers.base.Base):
     def _prepareTrainingData(self):
         prepData = preparation.Preparation()
         sentiment = prepData.AssignSentimentSentences()
-        with open(self.defaultFileNameSentimentSentences, 'wb') as csvfile:
-            sentiment.to_csv(csvfile, index = False)
+        prepData.SaveFileCsv(sentiment, prepData.defaultFileNameSentimentSentences)
+
+
+    # calculates features from data prepared by method _prepareTrainingData
+    # it uses sentences and combined dictionary (General Inquiry + MPQA processed) 
+    # result of this operation is saved as a CSV file for later use
+    def _extractFeatures(self):
+        prepData = preparation.Preparation()
+        featureVectors = prepData.ExtractFeatures()
+        instanceVectors = prepData.AddOutputDataInstancec(featureVectors)
+
+        args = vars(self.argParser.parse_args())
+        fileName = args['outputFile']
+        if fileName == None:
+            fileName = prepData.defaultFileNameSentimentSentences
+        prepData.SaveFileCsv(instanceVectors, fileName)

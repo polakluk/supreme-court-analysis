@@ -8,6 +8,8 @@ class GeneralInquirer(basecorpus.BaseCorpus):
         basecorpus.BaseCorpus.__init__(self)
         self.defaultFileNameOrig = '.'+self.sepDir+'corpora'+self.sepDir+'general-inquirer'+self.sepDir+'general-inquirer.txt'
         self.defaultFileNameProcessed = '.'+self.sepDir+'corpora'+self.sepDir+'processed'+self.sepDir+'general-inquirer-new.csv'
+        self.combinedFileLoc = '.'+self.sepDir+'corpora'+self.sepDir + "processed" + self.sepDir + 'combined-mpqagithub-gi.csv'
+
         self.filterHeader = ['entry', # word
                             'positiv', # clearly positive words (except for 'yes' words)
                             'negativ', # clearly negative words (except for 'no' words)
@@ -55,3 +57,10 @@ class GeneralInquirer(basecorpus.BaseCorpus):
 
             return filterData
         return None # just safety measurement
+
+
+    # combines General Inquirer with MPQA processed dictionary
+    def CombineDictionaries(self, mpqa, inquirer):
+        data = pd.merge(inquirer, mpqa, on= 'entry')
+        with open(self.combinedFileLoc, 'wb') as csvfile:
+            data.to_csv(csvfile, index = False)

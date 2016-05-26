@@ -18,7 +18,6 @@ class Mpqa(controllers.base.Base):
                                 'read-corpus-processed-clues' : self._readCorpusProcessedClues,
                                 'combine-corpora-clues' : self._combineCorporaClues,
         }
-        self.combinedFileLoc = self.corporaDir + "processed" + self.pathSeparator + 'combined-mpqagithub-gi.csv'
 
 
     # initializes its own parser
@@ -51,14 +50,11 @@ class Mpqa(controllers.base.Base):
 
     # combine my selected data  from Generic Inquirer with data obtained from Github
     def _combineCorporaClues(self):
-        parser_mpqa = mpqaProcessedParser.MpqaProcessed()
-        parser_inquirer = generalInquirerParser.GeneralInquirer()
-        data_mpqa = parser_mpqa.readFileCsv(None)
-        data_inquirer = parser_inquirer.readFileCsv(None)
-
-        data = pd.merge(data_inquirer, data_mpqa, on= 'entry')
-        with open(self.combinedFileLoc, 'wb') as csvfile:
-            data.to_csv(csvfile, index = False)
+        parserMpqa = mpqaProcessedParser.MpqaProcessed()
+        parserInquirer = generalInquirerParser.GeneralInquirer()
+        dataMpqa = parserMpqa.readFileCsv(None)
+        dataInquirer = parserInquirer.readFileCsv(None)
+        parserInquirer.CombineDictionaries(dataMpqa, dataInquirer)
 
 
     # reads annotations from MPQA corpus and adds them to already parsed data

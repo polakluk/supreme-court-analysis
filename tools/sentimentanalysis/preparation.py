@@ -1,9 +1,11 @@
 import pandas as pd
 import numpy as np
 import math
+import os
 
 # my tools
 from tools.parsers import mpqa as mpqaParser
+from tools.parsers import generalinquirer as generalInquirerParser
 
 
 # class that prepares data for training and testing phase
@@ -11,6 +13,10 @@ class Preparation(object):
 
     # constructor
     def __init__(self):
+        self.sepDir = os.path.sep
+        self.defaultFileNameSentimentSentences = '.'+self.sepDir+'corpora'+self.sepDir+'processed'+self.sepDir+'sentiment-sentences.csv'
+        self.defaultFileNameSentimentSentencesFeatures = '.'+self.sepDir+'featuresData'+self.sepDir+'sentiment-sentences.csv'
+
         self.cutoffNeutralSentiment = 0.005
         # constants for calculation of sentiment based on provided annotations
         self.sentimentConstants = {
@@ -79,27 +85,25 @@ class Preparation(object):
         self.counter2 = 0
         self.counter3 = 0
         for index, sentence in sentences.iterrows():
+            if sentence['annotsCount'] == 0:
+                continue
+
             sentimentResults['sentiment-measured'][index] = 0 # by default, we assume that the sentence has no sentiment
-            currentAnnots = annotations[(annotations['docName'] == sentence['docName']) & (annotations['dirName'] == sentence['dirName']) & (annotations['startByte'] >= sentence['startByte'] ) & (annotations['endByte'] <= sentence['endByte']) ]
-            if len(currentAnnots.index) > 0:
-                measured, sentimentType, intensity = self._calculateSentimentSentenceAnnotations(sentence, currentAnnots)
-                sentimentResults['sentiment-measured'][index] = measured
-                sentimentResults['sentiment-type'][index] = sentimentType
-                sentimentResults['sentiment-intensity'][index] = intensity
+            currentAnnots = annotations[(annotations['sentRow'] == index) ]
+            if currentAnnots.shape[0] == 0:
+                print("#######")
+            measured, sentimentType, intensity = self._calculateSentimentSentenceAnnotations(sentence, currentAnnots)
+            sentimentResults['sentiment-measured'][index] = measured
+            sentimentResults['sentiment-type'][index] = sentimentType
+            sentimentResults['sentiment-intensity'][index] = intensity
 #                print(measured)
 #                print(sentimentType)
 #                print(intensity)
-            else:
-                continue
-#            print("############################")
-#            if counter > 0:
-#                return
-#            else:
-#                counter += 1
         print('Counter = {}'.format(self.counter))
         print('Counter2 = {}'.format(self.counter2))
         print('Counter3 = {}'.format(self.counter3))
-        return pd.concat([sentences, sentimentResults], axis = 1)
+        finalFrame = pd.concat([sentences, sentimentResults], axis = 1)
+        return finalFrame[finalFrame['annotsCount'] > 0].reset_index()
 
 
     # takes sentences and replaces word constants in columnts with numbers (plus, replaces NAs with 'unknown' constants)
@@ -132,15 +136,21 @@ class Preparation(object):
             somewhatUncertain = attitudeUncertain.get(self.sentimentConstants['attitude-uncertain']['somewhat-uncertain'], 0)
             veryUncertain = attitudeUncertain.get(self.sentimentConstants['attitude-uncertain']['very-uncertain'], 0)
             if ((somewhatUncertain + veryUncertain) * 5.0) / 8.0: # not certain about the sentiment, so it is not measurable
-                return (measured, sentimentType, sentimentIntensity)
+                return (1, 1, 0) # say, we call it neutral
+#                return (measured, sentimentType, sentimentIntensity)
         # there is still chance to measure sentiment
         measured = 1
 
         # check, what type of sentiment is used in the sentence
         polarityBoth = polarity.get(self.sentimentConstants['polarity']['both'], 0)
         polarityShape = annotations.shape[0] - polarity.get(self.sentimentConstants['polarity']['unknown'], 0)
-        if (polarityBoth * 1.4) < annotations.shape[0]: # so the annotations suggest that the sentence has mixed sentiment
-            sentimentType = 1
+        if polarityShape == 0: # if there are no polarized annotations, use other markers in annotations
+            sentimentType == 1
+        else:
+            if (polarityBoth * 2) < polarityShape: # so the annotations suggest that the sentence has mixed sentiment
+                sentimentType = 1
+#        else:
+#            print("{} vs {} ({}) ==> {}".format(polarityBoth, polarityShape, polarity.get(self.sentimentConstants['polarity']['unknown'], 0), annotations.shape[0]))
 
         # last, but not least, calculate the intensity of sentiment
         if sentimentType == 1:
@@ -178,9 +188,13 @@ class Preparation(object):
         else: # mixes sentiment
 #            annotsFiltered = annotations[annotations['polarity'] == self.sentimentConstants['polarity']['both']]
             vals = np.array([])
+            counted = 0
             for idx, row in annotations.iterrows():
                 if row['polarity'] == self.sentimentConstants['polarity']['both'] or row['polarity'] == self.sentimentConstants['polarity']['uncertain-both']:
                     vals = np.append(vals, [self._calculateIntensityAnnotation(row)])
+                    counted += 1
+
+#               print("zero: {} vs {} ({})".format(annotations.shape[0], counted, polarityBoth))
             if vals.shape[0] > 0:
                 self.counter2 += 1
 #                print("Vals {}".format(np.mean(vals)))
@@ -206,3 +220,28 @@ class Preparation(object):
         if annot['expression-intensity'] != self.sentimentConstants['expression-intensity']['unknown']:
             intensity *= annot['expression-intensity']
         return intensity
+
+
+    # extracts features from sentences
+    def ExtractFeatures(self):
+        parserMpqa = mpqaProcessedParser.MpqaProcessed()
+        parserInquirer = generalInquirerParser.GeneralInquirer()
+        sentences = parserMpqa.readFileCsv(parserMpqa.defaultFileNameProcessed)
+        sentimentDictionaries = parserInquirer.readFileCsv(parserInquirer.combinedFileLoc)
+
+        return pd.DataFrame({})
+
+
+    # adds output vectors to feature vectors
+    def AddOutputDataInstancec(self, features):
+        parserMpqa = mpqaProcessedParser.MpqaProcessed()
+        sentences = parserMpqa.readFileCsv(parserMpqa.defaultFileNameProcessed)
+        outputData = sentences[:,('sentiment-measured', 'sentiment-type','sentiment-intensity')]
+
+        return features
+
+
+    # saves the data with header to a file in CSV format
+    def SaveFileCsv(self, data, fileName):
+        with open(fileName, 'wb') as csvfile:
+            data.to_csv(csvfile, index = False)
