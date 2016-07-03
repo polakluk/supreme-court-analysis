@@ -1,2 +1,4 @@
 *.pyc
+*.dump
 report-data
+.ipynb_checkpoints

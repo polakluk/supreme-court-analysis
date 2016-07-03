@@ -45,7 +45,7 @@ class Sentiment(controllers.base.Base):
 
 
     # calculates features from data prepared by method _prepareTrainingData
-    # it uses sentences and combined dictionary (General Inquiry + MPQA processed) 
+    # it uses sentences and combined dictionary (General Inquiry + MPQA processed)
     # result of this operation is saved as a CSV file for later use
     def _extractFeatures(self):
         prepData = preparation.Preparation()
