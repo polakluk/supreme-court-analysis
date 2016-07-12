@@ -2,3 +2,5 @@
 *.dump
 report-data
 .ipynb_checkpoints
+corpora/large-movie-review/test
+corpora/large-movie-review/train

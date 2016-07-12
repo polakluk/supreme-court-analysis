@@ -15,6 +15,7 @@ class Preparation(object):
     def __init__(self):
         self.sepDir = os.path.sep
         self.defaultFileNameSentimentSentences = '.'+self.sepDir+'corpora'+self.sepDir+'processed'+self.sepDir+'sentiment-sentences.csv'
+        self.defaultFileNameSentimentSentencesNormalized = '.'+self.sepDir+'corpora'+self.sepDir+'processed'+self.sepDir+'sentiment-sentences-norm.csv'
         self.defaultFileNameSentimentSentencesFeatures = '.'+self.sepDir+'featuresData'+self.sepDir+'sentiment-sentences.csv'
 
         self.cutoffNeutralSentiment = 0.005
@@ -84,9 +85,6 @@ class Preparation(object):
         counter = 0
         sentColumns = ['sentiment-measured', 'sentiment-type', 'sentiment-intensity']
         sentimentResults = pd.DataFrame(np.zeros((sentences.shape[0], len(sentColumns))), columns = sentColumns)
-        self.counter = 0
-        self.counter2 = 0
-        self.counter3 = 0
         # preprocess annotations
         annotations[annotations['attitude-type'].isin(['other', 'other-attitude', 'speculation', 'specilation'])] = np.nan
 
@@ -104,9 +102,6 @@ class Preparation(object):
             sentimentResults['sentiment-type'][index] = sentimentType
             sentimentResults['sentiment-intensity'][index] = intensity
 
-        print('Counter = {}'.format(self.counter))
-        print('Counter2 = {}'.format(self.counter2))
-        print('Counter3 = {}'.format(self.counter3))
         finalFrame = pd.concat([sentences, sentimentResults], axis = 1)
         return finalFrame[finalFrame['annotsCount'] > 0].reset_index()
 
@@ -119,6 +114,35 @@ class Preparation(object):
                 annotations[column] = annotations[column].map(lambda cell: self.sentimentConstants[column].get(cell))
 
         return annotations
+
+
+    # normalizes values of detected sentiment
+    def NormalizeValues(self):
+        parser = mpqaParser.Mpqa()
+        sentences = parser.readFileCsv(self.defaultFileNameSentimentSentences)
+
+        # normalize values
+        knownSentiment = sentences[sentences['sentiment-measured'] == 1]
+        # normalize mixed sentiment
+        sentimentMixed = knownSentiment['sentiment-type'] == 1
+        minVal = knownSentiment.loc[sentimentMixed, 'sentiment-intensity'].min()
+        maxVal = knownSentiment.loc[sentimentMixed, 'sentiment-intensity'].max()
+        knownSentiment.loc[sentimentMixed, 'sentiment-intensity'] = knownSentiment.loc[sentimentMixed, 'sentiment-intensity'] - minVal
+        rangeValues = float(maxVal - minVal)
+        knownSentiment.loc[sentimentMixed, 'sentiment-intensity'] = (rangeValues - knownSentiment.loc[sentimentMixed, 'sentiment-intensity']) / rangeValues
+
+        # now, normalize polarized sentiment
+        sentimentPolarized = knownSentiment['sentiment-type'] == 0
+        sentimentPolarizedNegative = sentimentPolarized & (knownSentiment['sentiment-intensity'] < 0)
+        sentimentPolarizedPositive = sentimentPolarized & (knownSentiment['sentiment-intensity'] > 0)
+        minVal = knownSentiment.loc[sentimentPolarized, 'sentiment-intensity'].min()
+        maxVal = knownSentiment.loc[sentimentPolarized, 'sentiment-intensity'].max()
+        rangeValuesNeg = float(minVal)
+        rangeValuesPos = float(maxVal)
+        knownSentiment.loc[sentimentPolarizedNegative, 'sentiment-intensity'] = ((rangeValuesNeg - knownSentiment.loc[sentimentPolarizedNegative, 'sentiment-intensity']) / -rangeValuesNeg)
+        knownSentiment.loc[sentimentPolarizedPositive, 'sentiment-intensity'] = (rangeValuesPos - knownSentiment.loc[sentimentPolarizedPositive, 'sentiment-intensity']) / rangeValuesPos
+
+        return knownSentiment
 
 
     # the method takes annotations and filters out meaningless annotations
@@ -147,7 +171,7 @@ class Preparation(object):
         if sentimentType == 1:
             negSum = negative.sum()
             posSum = positive.sum()
-
+            sentimentIntensity = negSum + posSum
         else:
             # take mean of annotations
             sentimentIntensity = np.mean(annotsValues)

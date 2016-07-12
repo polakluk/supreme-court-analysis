@@ -27,6 +27,7 @@ class Sentiment(controllers.base.Base):
         controllers.base.Base.__init__(self, pprinter, argParse)
         self.availableTask = {
                                 'prepare-training-data': self._prepareTrainingData,
+                                'normalize-values' : self._normalizeValues,
                                 'extract-features' : self._extractFeatures
         }
 
@@ -57,3 +58,10 @@ class Sentiment(controllers.base.Base):
         if fileName == None:
             fileName = prepData.defaultFileNameSentimentSentences
         prepData.SaveFileCsv(instanceVectors, fileName)
+
+
+    # normalizes data to range <0,1> (or <-1, 1> for polarized sentiment)
+    def _normalizeValues(self):
+        prepData = preparation.Preparation()
+        data = prepData.NormalizeValues()
+        prepData.SaveFileCsv(data, prepData.defaultFileNameSentimentSentencesNormalized)

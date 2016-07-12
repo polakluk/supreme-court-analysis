@@ -1,0 +1,28 @@
+cross-validation = 7
+Accuracy = 0.5694789081885856
+Mean Accuracy = 0.545760966765
+Random Forest, estimators = 800, max_features = None, max_depth = 10
+
+Features:
+'negations',
+'positivCount',
+'negativCount',
+'priorpolaritynegativeAfter',
+'hostileBefore',
+'yesBefore',
+'yesAfter',
+'noBefore',
+'negateBefore',
+'priorpolaritynegativeCountBefore'
+'priorpolaritypositiveCountBefore',
+'activeCountAfter',
+'passiveCountAfter',
+'hostileCountAfter', 
+'passiveAfter',
+'morePositiveThanNegativeStrong',
+'morePositiveThanNegativeWeak',
+'morePositiveThanNegative',
+'priorpolaritynegativeCountAfter',
+'priorpolaritypositiveAfter',
+'negateAfter',
+'priorpolaritypositiveCountAfter'
