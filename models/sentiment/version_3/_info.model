@@ -1,0 +1,47 @@
+cross-validation = 10
+Accuracy: 0.503875968992
+Accuracy in positive sentiment: 0.476744186047
+Accuracy in negative sentiment: 0.46511627907
+Accuracy in neutral sentiment: 0.56976744186
+[[40 37  9]
+ [13 49 24]
+ [11 34 41]]
+[[ 0.46511628  0.43023256  0.10465116]
+ [ 0.15116279  0.56976744  0.27906977]
+ [ 0.12790698  0.39534884  0.47674419]]
+
+Random Forest, estimators = 200, max_features = sqrt, max_depth = 5
+Max words = 25
+
+Features:
+selected_columns = [
+        'negations',
+        'wordCount', 
+        'positivCount',
+        'negativCount',
+        'priorpolaritynegativeAfter',
+        'priorpolaritypositiveBefore',
+        'activeBefore', 'passiveBefore',
+        'priorpolaritynegativeBefore',
+        'hostileBefore', 'yesBefore', 'yesAfter', 'noBefore', 'negateBefore',
+#        'activeCountBefore','passiveCountBefore', 'hostileCountBefore', 'yesCountBefore',
+        'noCountBefore', 'negateCountBefore', 'negateCountAfter', 
+        #'activeAfter',  'passiveAfter',
+        'priorpolaritynegativeCountBefore', 'priorpolaritypositiveCountBefore',
+        'activeCountAfter', 'passiveCountAfter', 'hostileCountAfter', 
+        'morePositiveThanNegativeStrong', 'morePositiveThanNegativeWeak', 'morePositiveThanNegative',
+       'yesCountAfter', 'noCountAfter', 
+        'priorpolaritynegativeCountAfter',
+        'priorpolaritypositiveAfter',
+#        'negateAfter',
+        'strongCount',
+        'priorpolaritypositiveCountAfter',
+#        'hostileAfter', 'noAfter',
+        'morePositiveThanNeutral', 'moreNegativeThanNeutral',
+#        'priorpolarityCountboth',
+#        'priorpolarityCountneutral', 'priorpolarityCountneutralstrongsubj',
+        'priorpolarityCountbothstrongsubj', 'priorpolarityCountbothweaksubj',
+#        'priorpolarityCountneutralweaksubj',
+        'priorpolarityneutralAfter',  'priorpolarityneutralBefore',
+        'priorpolaritybothBefore', 'priorpolaritybothAfter'
+    ]
