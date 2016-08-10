@@ -14,7 +14,9 @@ class LargeMovieReviews(basecorpus.BaseCorpus):
         basecorpus.BaseCorpus.__init__(self)
         self.defaultDirNameOrig = '.'+self.sepDir+'corpora'+self.sepDir+'large-movie-review'+self.sepDir
         self.defaultFileNameProcessed = '.'+self.sepDir+'corpora'+self.sepDir+'processed'+self.sepDir+'large-movie-review.csv'
+        self.defaultFileNameProcessedOverall = '.'+self.sepDir+'corpora'+self.sepDir+'processed'+self.sepDir+'large-movie-review-overall.csv'
         self._dataFrameColumns = ['id', 'rating', 'type', 'text', 'set']
+        self._dataFrameColumnsOverall = ['id', 'rating', 'type', 'set']
         self._tokenizer = nltk.data.load('tokenizers/punkt/english.pickle')
 
 
@@ -29,11 +31,12 @@ class LargeMovieReviews(basecorpus.BaseCorpus):
                 # go through all files
                 for fname in filenames:
                     meta_data = fname.split('_')
+
                     current_sentences = self._parseFile(dirpath+fname)
                     if len(current_sentences) > 0:
                         current_frame = pd.DataFrame(np.zeros((len(current_sentences), len(self._dataFrameColumns))), columns = self._dataFrameColumns)
                         current_frame['text'] = current_sentences
-                        current_frame['text'] = current_frame['text'].map(lambda cell: '|'.join(cell))                         
+                        current_frame['text'] = current_frame['text'].map(lambda cell: '|'.join(cell))
                         current_frame['id'] = meta_data[0]
                         current_frame['rating'] = meta_data[1].split('.')[0]
                         current_frame['type'] = types_reviews[idx]
@@ -43,6 +46,26 @@ class LargeMovieReviews(basecorpus.BaseCorpus):
 
         return sentences
 
+    # gets list of all all reviews with their data
+    # result is a dataframe
+    def _getOverallDataSource(self, source):
+        overallData = pd.DataFrame({}, columns = self._dataFrameColumnsOverall)
+        types_reviews = {'neg' : -1, 'pos' : 1}
+        for idx in types_reviews.keys():
+            for (dirpath, dirnames, filenames) in walk(source+idx+self.sepDir):
+                # go through all files
+                for fname in filenames:
+                    meta_data = fname.split('_')
+                    df = pd.DataFrame(np.zeros((1, len(self._dataFrameColumnsOverall))), columns = self._dataFrameColumnsOverall)
+                    df['id'] = meta_data[0]
+                    df['rating'] = meta_data[1].split('.')[0]
+                    df['type'] = types_reviews[idx]
+                    df['set'] = 1 if source[-6:] == 'train\\' else 0
+                    overallData = overallData.append(df, ignore_index = True)
+
+        return overallData
+
+
     # open the file and get all sentences
     def _parseFile(self, sourceFile):
         with open(sourceFile, 'rb') as review_file:
@@ -51,7 +74,7 @@ class LargeMovieReviews(basecorpus.BaseCorpus):
             return sentences
 
 
-    # reads all the file and returns pandas DataFrame
+    # reads each  file and returns pandas DataFrame
     def readFileRaw(self, dirNameRaw):
         if dirNameRaw == None:
             dirName = self.defaultDirNameOrig
@@ -61,6 +84,21 @@ class LargeMovieReviews(basecorpus.BaseCorpus):
         reviews = pd.DataFrame({}, columns = self._dataFrameColumns)
         for directory in review_sources:
             reviews_read = self._getListSentencesSource(directory)
+            reviews = reviews.append(reviews_read, ignore_index=True)
+
+        return reviews
+
+
+    # reads names of each file and returns pandas DataFrame
+    def readFileOverallData(self, dirNameRaw):
+        if dirNameRaw == None:
+            dirName = self.defaultDirNameOrig
+
+        review_sources = [dirName + 'train' + self.sepDir, dirName + 'test' + self.sepDir]
+
+        reviews = pd.DataFrame({}, columns = self._dataFrameColumnsOverall)
+        for directory in review_sources:
+            reviews_read = self._getOverallDataSource(directory)
             reviews = reviews.append(reviews_read, ignore_index=True)
 
         return reviews

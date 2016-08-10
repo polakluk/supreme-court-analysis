@@ -27,6 +27,7 @@ class Pdf(controllers.base.Base):
     def initializeArgumentParser(self):
         # extract input file name
         self.argParser.add_argument('-f', help="Filename", dest="filename", required=True)
+        self.argParser.add_argument('-m', help="PDF mode", dest="mode", required = True)
         self.parserInitialized = True
 
 
@@ -36,7 +37,7 @@ class Pdf(controllers.base.Base):
         fileName = args.filename
     #	currentParser = pdfParser.Pdf(".\\parsed-data\\")
     	currentParser = TesseractParser.TesseractOcr(self.parsedDataDir)
-    	currentParser.readFile(fileName)
+    	currentParser.readFile(fileName, args['mode'])
 
 
     # clean up read file afterwards

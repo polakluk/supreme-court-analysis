@@ -26,8 +26,6 @@ class Basic(object):
 		prevTwoLines = ['','']
 		res = []
 		for line in actFile:
-
-			print(line)
 			 # trim white spaces and get rid of wierd unicode character
 			line = self.__preprocessLine(line)
 

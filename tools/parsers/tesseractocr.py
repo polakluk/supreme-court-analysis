@@ -18,7 +18,9 @@ class TesseractOcr(object):
 	def __init__(self, outputDir, isDebug = True):
 		self.__outputDir = outputDir
 #		self.__img_crop = [270, 150, 1105, 1480] #left top right bottom # 150 DPI
-		self.__img_crop = [510, 310, 2260, 2980] #left top right bottom # 300DPI
+
+		self.__img_crop_modes = [[510, 310, 2260, 2980], [510, 270, 2260, 2900]]  #left top right bottom # 300DPI ]
+		self.__img_crop = self.__img_crop_modes[0] # (mode 0 = page numbers top right corner) (mode = 1 page numbers bottom center)
 		self.__threshold = 0.4508
 		self.__dpi = 300
 		self.__debug = isDebug
@@ -31,7 +33,9 @@ class TesseractOcr(object):
 
 
 	# reads PDF file and returns its plain text representation
-	def readFile(self, pdfFile ):
+	def readFile(self, pdfFile, mode = 'top-right' ):
+		mode = 0 if mode == 'top-right' else 1
+		self.__img_crop = self.__img_crop_modes[mode]
 		tool = pyocr.get_available_tools()[0]
 		lang = tool.get_available_languages()[1]
 
@@ -49,6 +53,7 @@ class TesseractOcr(object):
 			if self.__debug:
 				print "Parsing Page: " + str(idx + 1)
 			cloneImg = img[self.__img_crop[0] : self.__img_crop[2], self.__img_crop[1] : self.__img_crop[3] ]
+#			cloneImg.save(filename = './img_{}.png'.format(idx))
 			self.evaluate( cloneImg, 'threshold', self.__threshold)
 
 			txt = tool.image_to_string( PI.open(io.BytesIO(cloneImg.make_blob('png'))), lang=lang, builder=pyocr.builders.TextBuilder())+ "\n"

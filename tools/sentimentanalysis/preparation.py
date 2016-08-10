@@ -64,7 +64,7 @@ class Preparation(object):
                             'intention-pos' : 0.6,
                             'specilation' : 0.01,
                             'speculation' : 0.01,
-                            'unknown' : -1
+                            'unknown' : 0
             },
             'attitude-uncertain' : {
                             'somewhat-uncertain' : 0.9,
@@ -83,6 +83,7 @@ class Preparation(object):
         annotations = parser.readFileCsv(parser.defaultFileNameProcessedAnnots)
 
         counter = 0
+        self._counter = 0
         sentColumns = ['sentiment-measured', 'sentiment-type', 'sentiment-intensity']
         sentimentResults = pd.DataFrame(np.zeros((sentences.shape[0], len(sentColumns))), columns = sentColumns)
         # preprocess annotations
@@ -102,6 +103,7 @@ class Preparation(object):
             sentimentResults['sentiment-type'][index] = sentimentType
             sentimentResults['sentiment-intensity'][index] = intensity
 
+        print("Counter = {}".format(self._counter))
         finalFrame = pd.concat([sentences, sentimentResults], axis = 1)
         return finalFrame[finalFrame['annotsCount'] > 0].reset_index()
 
@@ -162,18 +164,22 @@ class Preparation(object):
 
         # calculate intensities of annotations
         annotsValues = annotations.apply(lambda row: self._calculateIntensityAnnotation(row), axis = 1)
+        annotsValues = annotsValues[np.invert(pd.isnull(annotsValues))]
         negative = annotsValues[annotsValues < 0]
         positive = annotsValues[annotsValues >= 0]
         # if both type of annotations are present, then the sentiment is mixed
         if (negative.shape[0] > 0) & (positive.shape[0] > 0):
             sentimentType = 1
-
-        if sentimentType == 1:
             negSum = negative.sum()
             posSum = positive.sum()
-            sentimentIntensity = negSum + posSum
-        else:
-            # take mean of annotations
+            if -negSum < 0.01 or posSum < 0.01:
+                sentimentType = 0
+                self._counter += 1
+            else:
+                sentimentIntensity = negSum + posSum
+
+        if sentimentType == 0:
+        # take mean of annotations
             sentimentIntensity = np.mean(annotsValues)
             if abs(sentimentIntensity) < self.cutoffNeutralSentiment:
                 sentimentIntensity = 0
@@ -184,29 +190,26 @@ class Preparation(object):
     # calculates intensity of one annotation
     def _calculateIntensityAnnotation(self, annot):
         intensity = 0
-        if annot['polarity'] == None: # calculate intensity from attitude
+        if annot['polarity'] is None: # calculate intensity from attitude
+            if annot['attitude-type'] == self.sentimentConstants['attitude-uncertain']['unknown']:
+                return None
             intensity = annot['attitude-type']
-            if annot['attitude-uncertain'] != self.sentimentConstants['attitude-uncertain']['unknown']:
+            if annot['attitude-uncertain'] == self.sentimentConstants['attitude-uncertain']['very-uncertain']:
+                return None
+            else:
                 intensity *= annot['attitude-uncertain']
         else: # primarily focus on calculating intensity from polarity
 #            print("********************")
 #            print(annot)
             intensity = annot['polarity']
-            if annot['intensity'] != self.sentimentConstants['intensity']['unknown']:
-                intensity *= annot['intensity']
-            if annot['expression-intensity'] != self.sentimentConstants['expression-intensity']['unknown']:
-                intensity *= annot['expression-intensity']
+            if annot['polarity'] == self.sentimentConstants['polarity']['unknown']:
+                return None
+
+        if annot['intensity'] != self.sentimentConstants['intensity']['unknown']:
+            intensity *= annot['intensity']
+        if annot['expression-intensity'] != self.sentimentConstants['expression-intensity']['unknown']:
+            intensity *= annot['expression-intensity']
         return intensity
-
-
-    # extracts features from sentences
-    def ExtractFeatures(self):
-        parserMpqa = mpqaProcessedParser.MpqaProcessed()
-        parserInquirer = generalInquirerParser.GeneralInquirer()
-        sentences = parserMpqa.readFileCsv(parserMpqa.defaultFileNameProcessed)
-        sentimentDictionaries = parserInquirer.readFileCsv(parserInquirer.combinedFileLoc)
-
-        return pd.DataFrame({})
 
 
     # adds output vectors to feature vectors

@@ -27,8 +27,7 @@ class Sentiment(controllers.base.Base):
         controllers.base.Base.__init__(self, pprinter, argParse)
         self.availableTask = {
                                 'prepare-training-data': self._prepareTrainingData,
-                                'normalize-values' : self._normalizeValues,
-                                'extract-features' : self._extractFeatures
+                                'normalize-values' : self._normalizeValues
         }
 
 
@@ -43,21 +42,6 @@ class Sentiment(controllers.base.Base):
         prepData = preparation.Preparation()
         sentiment = prepData.AssignSentimentSentences()
         prepData.SaveFileCsv(sentiment, prepData.defaultFileNameSentimentSentences)
-
-
-    # calculates features from data prepared by method _prepareTrainingData
-    # it uses sentences and combined dictionary (General Inquiry + MPQA processed)
-    # result of this operation is saved as a CSV file for later use
-    def _extractFeatures(self):
-        prepData = preparation.Preparation()
-        featureVectors = prepData.ExtractFeatures()
-        instanceVectors = prepData.AddOutputDataInstancec(featureVectors)
-
-        args = vars(self.argParser.parse_args())
-        fileName = args['outputFile']
-        if fileName == None:
-            fileName = prepData.defaultFileNameSentimentSentences
-        prepData.SaveFileCsv(instanceVectors, fileName)
 
 
     # normalizes data to range <0,1> (or <-1, 1> for polarized sentiment)
