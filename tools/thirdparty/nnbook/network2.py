@@ -174,15 +174,16 @@ class Network(object):
                 training_accuracy.append(accuracy)
                 print "Accuracy on training data: {} / {}".format(
                     accuracy, n)
+
             if monitor_evaluation_cost:
                 cost = self.total_cost(evaluation_data, lmbda)
                 evaluation_cost.append(cost)
                 print "Cost on evaluation data: {}".format(cost)
             if monitor_evaluation_accuracy:
-                accuracy = self.accuracy(evaluation_data, convert=True)
+                accuracy = self.accuracy(evaluation_data)
                 evaluation_accuracy.append(accuracy)
                 print "Accuracy on evaluation data: {} / {}".format(
-                    self.accuracy(evaluation_data), n_data)
+                    accuracy, n_data)
             print
         return evaluation_cost, evaluation_accuracy, \
             training_cost, training_accuracy
@@ -269,6 +270,8 @@ class Network(object):
         else:
             results = [(np.argmax(self.feedforward(x)), y)
                         for (x, y) in data]
+
+        print("DAMN")
         return sum(int(x == y) for (x, y) in results)
 
     def total_cost(self, data, lmbda, convert=False):

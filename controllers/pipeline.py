@@ -9,6 +9,7 @@ from tools.dialogs import extractor
 from tools.dialogs import container as dialogContainer
 from tools.dialogs import posdialog as dialogPosDialog
 from tools.pos import nltkpos as nltkPos
+from tools.pos import textblobpostagger as textBlobPosTagger
 from tools.dialogs import helper as dialogHelper
 from tools.synonyms import wordnet as wordnetSyns
 from tools.synonyms import lin as wordnetLinSyns
@@ -80,7 +81,7 @@ class Pipeline(controllers.base.Base):
 
         # Step 4 - Detect POS tags
         pdfFilePos = self.parsedDataDir + fNameRaw + self.pathSeparator + fNameRaw  + ".pos"
-        posTagger = nltkPos.NltkPos()
+        posTagger = textBlobPosTagger.TextBlobPosTagger()
         dialog = dialogContainer.Container()
         dialog.LoadFromFile(pdfFileDialog)
         dialogPos = dialogPosDialog.PosDialog(self.parsedDataDir + fNameRaw + self.pathSeparator, self.debug)

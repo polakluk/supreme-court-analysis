@@ -151,6 +151,7 @@ class Preparation(object):
     # returns filtered annotations
     def _filterAnnotations(self, annotations):
         filterIndex = (np.invert(annotations['polarity'].isnull())) | (np.invert(annotations['attitude-type'].isnull()))
+#        filterIndex = np.invert(annotations['attitude-type'].isnull())
         return annotations[filterIndex]
 
 
@@ -213,7 +214,7 @@ class Preparation(object):
 
 
     # adds output vectors to feature vectors
-    def AddOutputDataInstancec(self, features):
+    def AddOutputDataInstances(self, features):
         parserMpqa = mpqaProcessedParser.MpqaProcessed()
         sentences = parserMpqa.readFileCsv(parserMpqa.defaultFileNameProcessed)
         outputData = sentences[:,('sentiment-measured', 'sentiment-type','sentiment-intensity')]

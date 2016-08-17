@@ -8,6 +8,7 @@ from tools.dialogs import extractor
 from tools.dialogs import container as dialogContainer
 from tools.dialogs import posdialog as dialogPosDialog
 from tools.pos import nltkpos as nltkPos
+from tools.pos import textblobpostagger as textBlobPosTagger
 
 # Controller for handling work with PDFs
 class Pdf(controllers.base.Base):
@@ -27,7 +28,7 @@ class Pdf(controllers.base.Base):
     def initializeArgumentParser(self):
         # extract input file name
         self.argParser.add_argument('-f', help="Filename", dest="filename", required=True)
-        self.argParser.add_argument('-m', help="PDF mode", dest="mode", required = True)
+        self.argParser.add_argument('-m', help="PDF mode", dest="mode", required = False)
         self.parserInitialized = True
 
 
@@ -63,6 +64,7 @@ class Pdf(controllers.base.Base):
         args = self.argParser.parse_args()
         fileName = args.filename
     	posTagger = nltkPos.NltkPos()
+        posTagger = textBlobPosTagger.TextBlobPosTagger()
 
     	dialog = dialogContainer.Container()
     	dialog.LoadFromFile(fileName)
