@@ -21,9 +21,9 @@ class FeatureExtract(object):
         # constants
         self.__colTextArr = 'textArr'
         self.__colTextArrStemmed = 'textArrStemmed'
-        self.__colTokens = 'textArrStemmed'
-        self.__colText = 'text'
-        self.__colTextPos = 'textPos'
+        self.__colTokens = 'tokens'
+        self.__colText = 'sentence'
+        self.__colTextPos = 'pos'
         self.__colTextStemmed = 'textStemmed'
 
         self.__stemmer = SnowballStemmer("english")
@@ -31,13 +31,14 @@ class FeatureExtract(object):
         self.__parserInquirer = generalInquirerParser.GeneralInquirer()
         self.__parserNegation = negationParser.Negation()
 
-        self.__cached_directories = {}
+        self.__cached_dictionaries = {}
 
 
     # initialize extractor (all dictionaries)
     def Initialize(self):
-        self.__sentimentDictionary  = self.__parserInquirer.readFileCsv(parserInquirerself.__.combinerowileLoc)
+        self.__sentimentDictionary  = self.__parserInquirer.readFileCsv(self.__parserInquirer.combinedFileLoc)
         self.__negations = self.__parserNegation.readFileCsv(self.__parserNegation.defaultFileNameProcessed)
+        self.__negations['phraseStemmed'] = self.__negations['phrase'].map(lambda cell: self.__stemmer.stem(cell).lower())
 
         self.__sentimentDictionary['entryRaw'] = self.__sentimentDictionary['entry']
         self.__sentimentDictionary['entry'] = self.__sentimentDictionary['entry'].map(lambda cell: self.__stemmer.stem(cell))
@@ -49,14 +50,13 @@ class FeatureExtract(object):
     def ExtractFeaturesSentence(self, row):
         # determine punctuation
         row = self._get_punctuation(row)
-
         # now, preprocess the sentence
         row = self._process_words(row)
         # and remove articles
         row = self._remove_articles(row)
 
         # count negations
-        row = self.__count_negations(row)
+        row = self._count_negations(row)
         # then, calculate occurances of words from different subsets of dictionary
         row = self._calculate_required_sentence_column_counts(row)
         # moving on to calculate words around negations
@@ -78,7 +78,7 @@ class FeatureExtract(object):
 
 
     # this method implements binary search to look for a value in Series
-    def _bin_search__value(self, row, val, start, end, isDebug = False):
+    def _bin_search_value(self, row, val, start, end, isDebug = False):
         while start <= end:
             if isDebug:
                 print("Start: {};    End: {}".format(start, end))
@@ -114,24 +114,24 @@ class FeatureExtract(object):
             columnName = column+'Count'
             if val is not None:
                 columnName = columnName + val
-            if typeWord !is not None:
+            if typeWord is not None:
                 columnName = columnName + typeWord
 
         # cache the results for later use
-        if columnName not in self.__cached_directories.keys():
+        if columnName not in self.__cached_dictionaries.keys():
             if typeWord is None:
-                self.__cached_directories[columnName] = self.__sentimentDictionary[self.__sentimentDictionary[column] == compareVal]
+                self.__cached_dictionaries[columnName] = self.__sentimentDictionary[self.__sentimentDictionary[column] == compareVal]
             else:
                 if column is None:
-                    self.__cached_directories[columnName] = self.__sentimentDictionary[(self.__sentimentDictionary['type'] == typeWord)]
+                    self.__cached_dictionaries[columnName] = self.__sentimentDictionary[(self.__sentimentDictionary['type'] == typeWord)]
                 else:
-                    self.__cached_directories[columnName] = self.__sentimentDictionary[(self.__sentimentDictionary[column] == compareVal) & (self.__sentimentDictionary['type'] == typeWord)]
+                    self.__cached_dictionaries[columnName] = self.__sentimentDictionary[(self.__sentimentDictionary[column] == compareVal) & (self.__sentimentDictionary['type'] == typeWord)]
 
-        lookFor = self.__cached_directories[columnName]
+        lookFor = self.__cached_dictionaries[columnName]
 
         lookForVals = lookFor['entry'].values
         lookForLen = len(lookForVals) - 1
-        row = self._count_occurence_in_sentence(row, lookForVals, lookForLen, columnName), axis = 1)
+        row = self._count_occurence_in_sentence(row, lookForVals, lookForLen, columnName)
 
         return row
 
@@ -182,7 +182,7 @@ class FeatureExtract(object):
     def _count_negations(self, row):
         words = row[self.__colTextArrStemmed]
         self.__negations['found'] = self.__negations.apply(lambda rowNeg: 1 if rowNeg['phraseStemmed'] in words else 0, axis = 1)
-        row['negations'] = negations['found'].sum()
+        row['negations'] = self.__negations['found'].sum()
         return row
 
 
@@ -236,7 +236,7 @@ class FeatureExtract(object):
 
 
     # determines punctuation of a sentence
-    def _get_punctuation(row):
+    def _get_punctuation(self, row):
         last_character = row[self.__colText][-1:]
         if last_character in '?!.':
             row['punctuation'] = ord(last_character)
@@ -254,7 +254,7 @@ class FeatureExtract(object):
 
 
     # preprocess words in a sentence
-    def _process_words(row):
+    def _process_words(self, row):
         words = [ word for word in [self._clean_up_word(w) for w in word_tokenize(row[self.__colText])] if len(word) > 0]
         row[self.__colText] = '|' + '|'.join(words) + '|'
         row[self.__colTextArr] = words
@@ -272,15 +272,15 @@ class FeatureExtract(object):
         for _, neg_row in self.__negations.iterrows():
             neg = '|'+neg_row['phrase']+'|'
             neg_stemmed = '|' + neg_row['phraseStemmed'] + '|'
-            posNeg = row['text'].find(neg)
+            posNeg = row[self.__colText].find(neg)
             if posNeg == -1 :
                 return row
-            posNeg = row['textStemmed'].find(neg_stemmed)
+            posNeg = row[self.__colTextStemmed].find(neg_stemmed)
 
             afterPos = posNeg + len(neg_stemmed)
             for _, rowLook in lookFor.iterrows():
-                posBefore = row['textStemmed'].find(rowLook['entry'], 0, posNeg)
-                posAfter = row['textStemmed'].find(rowLook['entry'], afterPos)
+                posBefore = row[self.__colTextStemmed].find(rowLook['entry'], 0, posNeg)
+                posAfter = row[self.__colTextStemmed].find(rowLook['entry'], afterPos)
 
                 if posBefore != -1:
                     row[columnName+'Before'] = row[columnName+'Before'] + 1
@@ -302,10 +302,10 @@ class FeatureExtract(object):
         if count:
             columnName = columnName + "Count"
 
-        if columnName not in self.__cached_directories.keys():
-            self.__cached_directories[columnName] = self.__sentimentDictionary[self.__sentimentDictionary[column] == compareVal]
+        if columnName not in self.__cached_dictionaries.keys():
+            self.__cached_dictionaries[columnName] = self.__sentimentDictionary[self.__sentimentDictionary[column] == compareVal]
 
-        lookFor = self.__cached_directories[columnName]
+        lookFor = self.__cached_dictionaries[columnName]
         if count:
             row[columnName+"Before"]  = 0
             row[columnName+"After"]  = 0
@@ -369,11 +369,11 @@ class FeatureExtract(object):
         for n_gram in row[n_gram_col]:
             for idx in range(1, size_ngram):
                 w = n_gram[idx]
-                found = self._bin_search__value(afterSeries, w, 0, afterSeries.shape[0] - 1)
+                found = self._bin_search_value(afterSeries, w, 0, afterSeries.shape[0] - 1)
                 if found:
                     for idx_sub in range(0, idx):
                         w2 = n_gram[idx_sub]
-                        found_sub = self._bin_search__value(beforeSeries, w2, 0, beforeSeries.shape[0] - 1)
+                        found_sub = self._bin_search_value(beforeSeries, w2, 0, beforeSeries.shape[0] - 1)
                         if found_sub:
                             row[col] = row[col] + 1
         return row
@@ -389,11 +389,11 @@ class FeatureExtract(object):
             columnName = columnName + beforeClassVal
 
         if beforeSerieDefault is None:
-
-            if beforeClassCol+beforeClassVal not in self.__cached_directories.keys():
-                self.__cached_directories[beforeClassCol+beforeClassVal] = self.__sentimentDictionary[self.__sentimentDictionary[beforeClassCol] == compareValBefore].reset_index(drop=True)
-                self.__cached_directories[beforeClassCol+beforeClassVal] = self.__cached_directories[beforeClassCol+beforeClassVal]['entry']
-            lookForBefore = self.__cached_directories[beforeClassCol+beforeClassVal]
+            key = beforeClassCol+compareValBefore + 'entry'
+            if key not in self.__cached_dictionaries.keys():
+                self.__cached_dictionaries[key] = self.__sentimentDictionary[self.__sentimentDictionary[beforeClassCol] == compareValBefore].reset_index(drop=True)
+                self.__cached_dictionaries[key] = self.__cached_dictionaries[key]['entry'].values
+            lookForBefore = self.__cached_dictionaries[key]
         else:
             lookForBefore = beforeSerieDefault
 
@@ -403,11 +403,12 @@ class FeatureExtract(object):
         else:
             columnName = columnName + afterClassVal
 
-        if afterClassCol + afterClassVal not in self.__cached_directories.keys():
-            self.__cached_directories[afterClassCol + afterClassVal] = self.__sentimentDictionary[self.__sentimentDictionary[afterClassCol] == compareValAfter].reset_index(drop=True)
-            self.__cached_directories[afterClassCol + afterClassVal] = self.__cached_directories[afterClassCol + afterClassVal]['entry']
+        key = afterClassCol + compareValAfter + 'entry'
+        if key not in self.__cached_dictionaries.keys():
+            self.__cached_dictionaries[key] = self.__sentimentDictionary[self.__sentimentDictionary[afterClassCol] == compareValAfter].reset_index(drop=True)
+            self.__cached_dictionaries[key] = self.__cached_dictionaries[key]['entry'].values
 
-        lookForAfter = self.__cached_directories[afterClassCol + afterClassVal]
+        lookForAfter = self.__cached_dictionaries[key]
 
         row[columnName]  = 0
         row = self._count_one_before_other_ngran_sentence(row, columnName, size_ngram, lookForBefore, lookForAfter)
@@ -481,19 +482,19 @@ class FeatureExtract(object):
         n_gram_col = 'pos_'+str(size_ngram)+'_gram'
         for n_gram in row[n_gram_col]:
             for idx in range(1, size_ngram):
-            w = n_gram[idx]
-            if afterSeriesPos is not None and w[1] not in afterSeriesPos:
-                continue
-
-            found = self._bin_search__value(afterSeries, w[0], 0, afterSeries.shape[0] - 1)
-            if found:
-                for idx_sub in range(0, idx):
-                w2 = n_gram[idx_sub]
-                if beforeSeriesPos is not None and w2[1] not in beforeSeriesPos:
+                w = n_gram[idx]
+                if afterSeriesPos is not None and w[1] not in afterSeriesPos:
                     continue
-                found_sub = self._bin_search__value(beforeSeries, w2[0], 0, beforeSeries.shape[0] - 1)
-                if found_sub:
-                    row[col] = row[col] + 1
+
+                found = self._bin_search_value(afterSeries, w[0], 0, afterSeries.shape[0] - 1)
+                if found:
+                    for idx_sub in range(0, idx):
+                        w2 = n_gram[idx_sub]
+                        if beforeSeriesPos is not None and w2[1] not in beforeSeriesPos:
+                            continue
+                        found_sub = self._bin_search_value(beforeSeries, w2[0], 0, beforeSeries.shape[0] - 1)
+                        if found_sub:
+                            row[col] = row[col] + 1
         return row
 
 
@@ -515,13 +516,14 @@ class FeatureExtract(object):
 
         if beforeSerieDefault is None:
             if beforeClassCol is None:
-                lookForBefore = sentimentDictionary.reset_index(drop = True)
+                lookForBefore = self.__sentimentDictionary.reset_index(drop = True)
                 lookForBefore = lookForBefore['entryRaw']
             else:
-                if beforeClassCol + beforeClassVal not in self.__cached_directories[columnName]:
-                    self.__cached_directories[beforeClassCol + beforeClassVal] = self.__sentimentDictionary[self.__sentimentDictionary[beforeClassCol] == compareValBefore].reset_index(drop=True)
-                    self.__cached_directories[beforeClassCol + beforeClassVal] = self.__cached_directories[beforeClassCol + beforeClassVal]['entryRaw']
-                lookForBefore = self.__cached_directories[beforeClassCol + beforeClassVal]
+                key = beforeClassCol + compareValBefore + "entryraw"
+                if key not in self.__cached_dictionaries.keys():
+                    self.__cached_dictionaries[key] = self.__sentimentDictionary[self.__sentimentDictionary[beforeClassCol] == compareValBefore].reset_index(drop=True)
+                    self.__cached_dictionaries[key] = self.__cached_dictionaries[beforeClassCol + beforeClassVal]['entryRaw']
+                lookForBefore = self.__cached_dictionaries[key]
         else:
             lookForBefore = beforeSerieDefault
 
@@ -532,13 +534,14 @@ class FeatureExtract(object):
             columnName = columnName + afterClassVal
 
         if afterClassCol is None:
-            lookForAfter = sentimentDictionary.reset_index(drop = True)
+            lookForAfter = self.__sentimentDictionary.reset_index(drop = True)
             lookForAfter = lookForAfter['entryRaw']
         else:
-            if afterClassCol + afterClassVal not in self.__cached_directories[columnName]:
-                self.__cached_directories[afterClassCol + afterClassVal] = self.__sentimentDictionary[self.__sentimentDictionary[afterClassCol] == compareValAfter].reset_index(drop=True)
-                self.__cached_directories[afterClassCol + afterClassVal] = self.__cached_directories[afterClassCol + afterClassVal]['entryRaw']
-            lookForAfter = self.__cached_directories[afterClassCol + afterClassVal]
+            key = afterClassCol + compareValAfter + "entryraw"
+            if key not in self.__cached_dictionaries.keys():
+                self.__cached_dictionaries[key] = self.__sentimentDictionary[self.__sentimentDictionary[afterClassCol] == compareValAfter].reset_index(drop=True)
+                self.__cached_dictionaries[key] = self.__cached_dictionaries[key]['entryRaw']
+            lookForAfter = self.__cached_dictionaries[key]
 
         row[columnName]  = 0
         row =  self._count_one_before_other_ngran_pos_sentence(row, columnName, size_ngram, lookForBefore, lookForAfter, beforeClassPos, afterClassPos)
@@ -559,8 +562,8 @@ class FeatureExtract(object):
         row = self._count_one_before_other_ngran_pos(row, 4, None, 'strong', adjective_tags, noun_tags, None, None)
         row = self._count_one_before_other_ngran_pos(row, 5, None, 'strong', adjective_tags, noun_tags, None, None)
         row = self._count_one_before_other_ngran_pos(row, 5, None, 'negativ', adjective_tags, noun_tags, None, None)
-        row = self._count_one_before_other_ngran_pos(row, 4, 'negations', 'priorpolarity', 'ADJ', 'NOUN', None, 'positive', negations['phraseStemmed'])
-        row = self._count_one_before_other_ngran_pos(row, 5, 'negations', 'priorpolarity', 'ADJ', 'NOUN', None, 'positive', negations['phraseStemmed'])
+        row = self._count_one_before_other_ngran_pos(row, 4, 'negations', 'priorpolarity', 'ADJ', 'NOUN', None, 'positive', self.__negations['phraseStemmed'])
+        row = self._count_one_before_other_ngran_pos(row, 5, 'negations', 'priorpolarity', 'ADJ', 'NOUN', None, 'positive', self.__negations['phraseStemmed'])
         row = self._count_one_before_other_ngran_pos(row, 4, None, 'priorpolarity', adjective_adverb_tags, noun_tags, None, 'positive')
         row = self._count_one_before_other_ngran_pos(row, 5, None, 'priorpolarity', adjective_adverb_tags, noun_tags, None, 'positive')
         row = self._count_one_before_other_ngran_pos(row, 4, None, 'priorpolarity', adjective_adverb_tags, noun_tags, None, 'negative')
@@ -573,8 +576,8 @@ class FeatureExtract(object):
         row = self._count_one_before_other_ngran_pos(row, 5, None, 'priorpolarity', adjective_tags, noun_tags, None, 'negative')
         row = self._count_one_before_other_ngran_pos(row, 4, None, 'priorpolarity', adjective_tags, noun_tags, None, 'neutral')
         row = self._count_one_before_other_ngran_pos(row, 5, None, 'priorpolarity', adjective_tags, noun_tags, None, 'neutral')
-        row = self._count_one_before_other_ngran_pos(row, 4, 'negations', 'priorpolarity', adjective_tags, noun_tags, None, 'positive', negations['phraseStemmed'])
-        row = self._count_one_before_other_ngran_pos(row, 5, 'negations', 'priorpolarity', adjective_tags, noun_tags, None, 'positive', negations['phraseStemmed'])
+        row = self._count_one_before_other_ngran_pos(row, 4, 'negations', 'priorpolarity', adjective_tags, noun_tags, None, 'positive', self.__negations['phraseStemmed'])
+        row = self._count_one_before_other_ngran_pos(row, 5, 'negations', 'priorpolarity', adjective_tags, noun_tags, None, 'positive', self.__negations['phraseStemmed'])
         row = self._count_one_before_other_ngran_pos(row, 4, None, 'hostile', adjective_tags, noun_tags, None, None)
         row = self._count_one_before_other_ngran_pos(row, 5, None, 'hostile', adjective_tags, noun_tags, None, None)
         return row

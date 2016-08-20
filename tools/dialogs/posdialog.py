@@ -1,3 +1,4 @@
+import pandas as pd
 import csv
 from tools.dialogs import person as personDialog
 from tools.filehelper import FileHelper
@@ -9,10 +10,9 @@ class PosDialog(object):
 	# constructor
 	def __init__(self, parsedDir, isDebug = False):
 		self.__outputDir = parsedDir
-		self.__dialog = None
+		self.__dialogSent = None
 		self.__list_parts_pos = None
 		self.__pos_tagger = None
-		self.__sentence_delimiter = '###'
 		self.__word_delimiter = '^^^'
 		self.__pos_delimiter = '||'
 		self.__isDebug = isDebug
@@ -24,13 +24,8 @@ class PosDialog(object):
 
 
 	# sets dialog for this report
-	def SetDialog(self, newDialog):
-		self.__dialog = newDialog
-
-
-	# returns only dialog
-	def GetDialog(self):
-		return self.__dialog
+	def SetDialogSent(self, newDialog):
+		self.__dialogSent = newDialog
 
 
 	# returns dialog with POS tags
@@ -45,22 +40,14 @@ class PosDialog(object):
 
 		if self.__list_parts_pos == None or refresh:
 			self.__list_parts_pos = []
-			parts = self.__dialog.GetDialog()
+			parts = self.__dialogSent.GetDialogSentences()
 			people = personDialog.Person()
-			idx = 0
 
 			for part in parts:
-				if self.__isDebug:
-					print("Start tagging "+str(idx))
-				obj = people.GetEmptyPosPerson(part['name'], part['text'], part['was_interrupted'], part['role'])
-				obj['pos'] = self.__pos_tagger.Tag( self.__pos_tagger.SeparateSentenctes(part['text']), self.__isDebug)
+				obj = people.GetEmptyPosPerson(part['name'], part['turn'], part['sentence'], part['sentence_id'],
+												part['was_interrupted'], part['role'])
+				obj['pos'] = self.__pos_tagger.Tag( part['sentence'], self.__isDebug)
 				self.__list_parts_pos.append(obj)
-
-				if self.__isDebug:
-					print("End tagging "+str(idx))
-
-				idx += 1
-
 
 		return self.__list_parts_pos
 
@@ -72,17 +59,14 @@ class PosDialog(object):
 
 		with open( self.__outputDir + fileName, 'wb') as csvfile:
 			writer = csv.writer(csvfile, delimiter = ',')
-			writer.writerow(['Role', 'Name', 'Text', 'Was Interrupted', 'POS'])
+			writer.writerow(['Turn', 'Sentence ID', 'Sentence', 'POS', 'Role', 'Name', 'Was Interrupted'])
 			for part in self.__list_parts_pos:
 				was_interrupted = '0'
 				if part['was_interrupted']:
 					was_interrupted = '1'
-
-
-
-				pos_arr = [self.__word_delimiter.join([ word[0]+self.__pos_delimiter+word[1] for word in sentence ]) for sentence in part['pos']]
-
-				writer.writerow([part['role'], part['name'], part['text'], was_interrupted, self.__sentence_delimiter.join(pos_arr)])
+				pos_arr = self.__word_delimiter.join([ word[0]+self.__pos_delimiter+word[1] for word in part['pos'] ])
+				writer.writerow([part['turn'], part['sentence_id'], part['sentence'],
+								pos_arr, part['role'], part['name'], was_interrupted])
 
 
 	# load POS tags from file
@@ -96,20 +80,26 @@ class PosDialog(object):
 			for row in reader:
 				# skip header line
 				if skippedFirstLine:
-					obj = people.GetEmptyPosPerson(row[1], row[2], row[3] == '1', row[0])
+					obj = people.GetEmptyPosPerson(row[5], row[0], row[2], row[1], row[6] == '1', row[4])
 
 					# parse words and sentences
-					sentences = [[word.split(self.__pos_delimiter) for word in sentence.split(self.__word_delimiter)] for sentence in row[4].split(self.__sentence_delimiter)]
+					sentences = [word.split(self.__pos_delimiter) for word in row[3].split(self.__word_delimiter)]
 					obj['pos'] = sentences
 					self.__list_parts_pos.append(obj)
-
-					# maintain original Dialog object too
-					objOriginal = people.GetEmpty()
-					objOriginal['role'] = row[0]
-					objOriginal['name'] = row[1]
-					objOriginal['text'] = row[2]
-					objOriginal['was_interrupted'] = row[3] == '1'
-					self.__dialog.append(objOriginal);
-
 				else:
 					skippedFirstLine = True
+
+
+
+	# returns the dialog with POS tags as dataframe
+	def AsDataFrame(self):
+		if self.__list_parts_pos is None:
+			return pd.DataFrame({})
+
+		data = []
+		for part in self.__list_parts_pos:
+			line = [part['name'], part['role'], part['turn'], part['sentence'], part['sentence_id'],
+					part['pos'], part['was_interrupted']]
+			data.append(line)
+
+		return pd.DataFrame(data, columns = ['name', 'role', 'turn', 'sentence', 'sentence_id', 'pos', 'was_interrupted'])

@@ -3,7 +3,8 @@ import controller as mainController
 
 # main
 def main():
-	controller = mainController.Controller(True, True)
+#	controller = mainController.Controller(True, True)
+	controller = mainController.Controller(False, True)
 	controller.Execute()
 	return 0
 

@@ -19,15 +19,13 @@ class TextBlobPosTagger(object):
 
 
     # tag each word in provided sentencted
-    def Tag(self, sentences, isDebug = False):
+    def Tag(self, sentence, isDebug = False):
         res = []
-
-        for sentence in sentences:
-            tagged_words = TextBlob(sentence, pos_tagger = self.__pos_tagger)
-            posSentence = tagged_words.tags
-            if len(posSentence) > 0:
-                res.append(posSentence)
-            if isDebug:
-                print("End Tagging")
+        tagged_words = TextBlob(sentence, pos_tagger = self.__pos_tagger)
+        posSentence = tagged_words.tags
+        if len(posSentence) > 0:
+            res = posSentence
+        if isDebug:
+            print("End Tagging")
 
         return res

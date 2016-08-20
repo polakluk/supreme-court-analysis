@@ -21,6 +21,7 @@ class Person(object):
 				'turns' : val
 		}
 
+
 	# creates an object for a person for reporting who follows each justice and when
 	def GetEmptyReportFollows(self, parts, followee, position):
 		return {
@@ -31,6 +32,7 @@ class Person(object):
 				'position' : position
 		}
 
+
 	# creates an object for a person for reporting justices turns
 	def GetEmptyReportMostFollow(self, parts, val, follower):
 		return {
@@ -39,6 +41,7 @@ class Person(object):
 				'follower' : follower,
 				'ratio' : val
 		}
+
 
 	# creates an empty object for a person for reporting length and position of justices turns
 	def GetEmptyReportTurnLength(self, parts, position, length, info):
@@ -50,15 +53,19 @@ class Person(object):
 				'information' : info
 		}
 
+
 	# creates an empty object for person with POS tags describing its text
-	def GetEmptyPosPerson(self, name, text, was_interrupted, role):
+	def GetEmptyPosPerson(self, name, turn, sent, sent_id, was_interrupted, role):
 		return {
 				'name' : name,
-				'text' : text,
+				'turn' : turn,
+				'sentence' : sent,
+				'sentence_id' : sent_id,
 				'was_interrupted' : was_interrupted,
 				'role' : role,
 				'pos' : []
 				}
+
 
 	# creates an empty object for person with POS tags describing its text
 	def GetEmptyNounsPerson(self, name, role, nouns):
@@ -68,6 +75,7 @@ class Person(object):
 				'nouns' : nouns
 				}
 
+
 	# creates an empty object for person to count words
 	def GetEmptyCountWordsPerson(self, name, role, countWords, countTurns, wordsPerTurn):
 		return {
@@ -76,4 +84,16 @@ class Person(object):
 				'words' : countWords,
 				'turns' : countTurns,
 				'wordsPerTurn' : wordsPerTurn
+				}
+
+
+	# creates an empty object for sentence in turn
+	def GetEmptySentencePerson(self, name, turn, sent, sent_id, was_interrupted, role):
+		return {
+				'name' : name,
+				'turn' : turn,
+				'was_interrupted' : was_interrupted,
+				'role' : role,
+				'sentence' : sent,
+				'sentence_id' : sent_id
 				}

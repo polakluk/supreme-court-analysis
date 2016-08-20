@@ -8,6 +8,7 @@ from tools.parsers import tesseractocr as TesseractParser
 from tools.dialogs import extractor
 from tools.dialogs import container as dialogContainer
 from tools.dialogs import posdialog as dialogPosDialog
+from tools.dialogs import sentencedialog as dialogSentenceDialog
 from tools.pos import nltkpos as nltkPos
 from tools.pos import textblobpostagger as textBlobPosTagger
 from tools.dialogs import helper as dialogHelper
@@ -60,8 +61,8 @@ class Pipeline(controllers.base.Base):
             os.makedirs(self.reportDataDir + fNameRaw + self.pathSeparator)
 
         # Step 1 - Read PDF file
-        currentParser = TesseractParser.TesseractOcr(self.parsedDataDir + fNameRaw + self.pathSeparator)
-        currentParser.readFile(args['filename'], args['mode'])
+        #currentParser = TesseractParser.TesseractOcr(self.parsedDataDir + fNameRaw + self.pathSeparator)
+        #currentParser.readFile(args['filename'], args['mode'])
         print("Step 1 - Done")
 
         # Step 2 - Clean up the file afterwards
@@ -79,26 +80,35 @@ class Pipeline(controllers.base.Base):
             extractTool.SaveToFile(dialogParts, pdfFileDialog)
         print("Step 3 - Done")
 
-        # Step 4 - Detect POS tags
-        pdfFilePos = self.parsedDataDir + fNameRaw + self.pathSeparator + fNameRaw  + ".pos"
+        # Step 4 - Split into sentences
+        pdfFileSent = self.parsedDataDir + fNameRaw + self.pathSeparator + fNameRaw  + ".sentences"
         posTagger = textBlobPosTagger.TextBlobPosTagger()
         dialog = dialogContainer.Container()
         dialog.LoadFromFile(pdfFileDialog)
-        dialogPos = dialogPosDialog.PosDialog(self.parsedDataDir + fNameRaw + self.pathSeparator, self.debug)
-        dialogPos.SetDialog(dialog)
-        dialogPos.SetPosTagger(posTagger)
-        data = dialogPos.GetPosTaggedParts()
-        dialogPos.SaveToFile(fNameRaw)
+        dialogSent = dialogSentenceDialog.SentenceDialog(self.parsedDataDir + fNameRaw + self.pathSeparator, self.debug)
+        dialogSent.SetDialog(dialog)
+        dialogSent.SetPosTagger(posTagger)
+        dialogSent.SplitTurnsToSentences()
+        dialogSent.SaveToFile(fNameRaw+".sentences")
         print("Step 4 - Done")
 
-        # Step 5 - Run Basic Reports
-        self.__runBasicReports(dialog, fNameRaw)
+        # Step 5 - Detect POS tags
+        pdfFilePos = self.parsedDataDir + fNameRaw + self.pathSeparator + fNameRaw  + ".pos"
+        posTagger = textBlobPosTagger.TextBlobPosTagger()
+        dialogPos = dialogPosDialog.PosDialog(self.parsedDataDir + fNameRaw + self.pathSeparator, self.debug)
+        dialogPos.SetDialogSent(dialogSent)
+        dialogPos.SetPosTagger(posTagger)
+        data = dialogPos.GetPosTaggedParts()
+        dialogPos.SaveToFile(fNameRaw+".pos")
         print("Step 5 - Done")
 
-        # Step 6 - Run NLP Reports
-
-        self.__runNlpReports(dialogPos, dialog, fNameRaw)
+        # Step 6 - Run Basic Reports
+        self.__runBasicReports(dialog, fNameRaw)
         print("Step 6 - Done")
+
+        # Step 7 - Run NLP Reports
+        #self.__runNlpReports(dialogPos, dialog, fNameRaw)
+        print("Step 7 - Done")
 
 
     # runs basic reports on the PDF

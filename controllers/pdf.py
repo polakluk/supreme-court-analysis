@@ -7,6 +7,7 @@ from tools.cleaners import basic
 from tools.dialogs import extractor
 from tools.dialogs import container as dialogContainer
 from tools.dialogs import posdialog as dialogPosDialog
+from tools.dialogs import sentencedialog as dialogSentenceDialog
 from tools.pos import nltkpos as nltkPos
 from tools.pos import textblobpostagger as textBlobPosTagger
 
@@ -17,10 +18,11 @@ class Pdf(controllers.base.Base):
     def __init__(self, pprinter, argParse):
         controllers.base.Base.__init__(self, pprinter, argParse)
         self.availableTask = {
-                                'read-pdf': self._readPdfFile,
-                                'process-pdf' : self._preprocessInputFile,
-                                'extract-parts' : self._extractPartsDialog,
-                                'generate-pos' : self._generatePosTags
+                                'read-pdf': self._readPdfFile, # step 1
+                                'process-pdf' : self._preprocessInputFile, # step 2
+                                'extract-parts' : self._extractPartsDialog, # step 3
+                                'generate-sentences' : self._generate_sentences, # step 4a
+                                'generate-pos' : self._generatePosTags # step 4b
         }
 
 
@@ -63,16 +65,33 @@ class Pdf(controllers.base.Base):
     def _generatePosTags(self):
         args = self.argParser.parse_args()
         fileName = args.filename
-    	posTagger = nltkPos.NltkPos()
         posTagger = textBlobPosTagger.TextBlobPosTagger()
 
-    	dialog = dialogContainer.Container()
-    	dialog.LoadFromFile(fileName)
+    	dialogSent = dialogSentenceDialog.SentenceDialog(self.parsedDataDir, self.debug)
+    	dialogSent.LoadFromFile(fileName)
 
     	dialogPos = dialogPosDialog.PosDialog(self.parsedDataDir, self.debug)
-    	dialogPos.SetDialog(dialog)
+    	dialogPos.SetDialogSent(dialogSent)
     	dialogPos.SetPosTagger(posTagger)
     	data = dialogPos.GetPosTaggedParts()
         if self.debug:
     		self.pprint.pprint(data)
     	dialogPos.SaveToFile(fileName)
+
+
+    # this method generates sentences from turn
+    def _generate_sentences(self):
+        args = self.argParser.parse_args()
+        fileName = args.filename
+        posTagger = textBlobPosTagger.TextBlobPosTagger()
+
+    	dialog = dialogContainer.Container()
+    	dialog.LoadFromFile(fileName)
+
+    	dialogSent = dialogSentenceDialog.SentenceDialog(self.parsedDataDir, self.debug)
+    	dialogSent.SetDialog(dialog)
+    	dialogSent.SetPosTagger(posTagger)
+    	data = dialogSent.SplitTurnsToSentences()
+        if self.debug:
+    		self.pprint.pprint(data)
+    	dialogSent.SaveToFile(fileName)
