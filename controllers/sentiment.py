@@ -64,5 +64,13 @@ class Sentiment(controllers.base.Base):
 
     # calculates sentiment per file
     def _calculateSentiment(self):
-        model = predic.Predict()
-    # first, load dialog with POS tags
+        model = predict.Predict()
+        model.LoadModel()
+
+        dt = pd.from_csv(args['inpFile'])
+        predicted = model.Predict(dt)
+        dt['sentiment'] = predicted
+        fOutName = args['outputFile']
+        if fOutName is None:
+            fOutName = self.parsedDataDir + fNameRaw + self.pathSeparator + fNameRaw + ".sentiment"
+        dt.to_csv(fOutName)

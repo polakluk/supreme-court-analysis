@@ -18,7 +18,7 @@ class Preparation(object):
         self.defaultFileNameSentimentSentencesNormalized = '.'+self.sepDir+'corpora'+self.sepDir+'processed'+self.sepDir+'sentiment-sentences-norm.csv'
         self.defaultFileNameSentimentSentencesFeatures = '.'+self.sepDir+'featuresData'+self.sepDir+'sentiment-sentences.csv'
 
-        self.cutoffNeutralSentiment = 0.005
+        self.cutoffNeutralSentiment = 0.01
         # constants for calculation of sentiment based on provided annotations
         self.sentimentConstants = {
             'intensity' : {

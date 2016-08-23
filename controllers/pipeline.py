@@ -102,13 +102,23 @@ class Pipeline(controllers.base.Base):
         dialogPos.SaveToFile(fNameRaw+".pos")
         print("Step 5 - Done")
 
-        # Step 6 - Run Basic Reports
-        self.__runBasicReports(dialog, fNameRaw)
+        # Step 5 - Feature Extracct
+        pdfFilePos = self.parsedDataDir + fNameRaw + self.pathSeparator + fNameRaw  + ".pos"
+        posTagger = textBlobPosTagger.TextBlobPosTagger()
+        dialogPos = dialogPosDialog.PosDialog(self.parsedDataDir + fNameRaw + self.pathSeparator, self.debug)
+        dialogPos.SetDialogSent(dialogSent)
+        dialogPos.SetPosTagger(posTagger)
+        data = dialogPos.GetPosTaggedParts()
+        dialogPos.SaveToFile(fNameRaw+".pos")
         print("Step 6 - Done")
 
-        # Step 7 - Run NLP Reports
-        #self.__runNlpReports(dialogPos, dialog, fNameRaw)
+        # Step 7 - Run Basic Reports
+        self.__runBasicReports(dialog, fNameRaw)
         print("Step 7 - Done")
+
+        # Step 8 - Run NLP Reports
+        #self.__runNlpReports(dialogPos, dialog, fNameRaw)
+        print("Step 8 - Done")
 
 
     # runs basic reports on the PDF

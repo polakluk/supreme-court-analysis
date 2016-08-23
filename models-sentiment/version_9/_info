@@ -1,0 +1,57 @@
+cross-validation 9
+Accuracy: 0.542056074766
+Accuracy in positive sentiment: 0.485981308411
+Accuracy in negative sentiment: 0.588785046729
+Accuracy in neutral sentiment: 0.551401869159
+[[63 35  9]
+ [30 59 18]
+ [15 40 52]]
+[[ 0.58878505  0.3271028   0.08411215]
+ [ 0.28037383  0.55140187  0.1682243 ]
+ [ 0.14018692  0.37383178  0.48598131]]
+
+Randomforest, max-depth = 8, max_features = log2, estimators = 800
+
+**** worst-case
+Accuracy: 0.436137071651
+Accuracy in positive sentiment: 0.317757009346
+Accuracy in negative sentiment: 0.448598130841
+Accuracy in neutral sentiment: 0.542056074766
+[[48 43 16]
+ [16 58 33]
+ [20 53 34]]
+[[ 0.44859813  0.40186916  0.14953271]
+ [ 0.14953271  0.54205607  0.30841121]
+ [ 0.18691589  0.4953271   0.31775701]]
+
+------- IMDB
+Direct model
+Accuracy: 0.525
+Accuracy in positive sentiment: 0.803
+Accuracy in negative sentiment: 0.247
+Accuracy in neutral sentiment: 0
+[[247 143 610]
+ [  0   0   0]
+ [103  94 803]]
+[[ 0.247  0.143  0.61 ]
+ [   nan    nan    nan]
+ [ 0.103  0.094  0.803]]
+
+Trained model
+Accuracy: 0.551
+Accuracy in positive sentiment: 0.493
+Accuracy in negative sentiment: 0.609
+Accuracy in neutral sentiment: 0
+[[609 136 255]
+ [  0   0   0]
+ [360 147 493]]
+[[ 0.609  0.136  0.255]
+ [   nan    nan    nan]
+ [ 0.36   0.147  0.493]]
+-------
+
+Features:
+pos_features = feature_selection('pos', stats, 2.1, 0.05)
+neg_features = feature_selection('neg', stats, 2.2, 0.2)
+neutral_features = feature_selection('neutral', stats, 2.5, 0.05)
+Number of features: pos = 49, neg = 18, neutral = 45, total = 54
