@@ -1,3 +1,4 @@
+import pandas as pd
 import controllers.base
 
 # my tools
@@ -18,7 +19,8 @@ class Sentiment(controllers.base.Base):
                     'prepare-training-data': self._prepareTrainingData,
                     'normalize-values' : self._normalizeValues,
                     'extract-features' : self._featureExtract,
-                    'calculate-sentiment' : self._calculateSentiment
+                    'calculate-sentiment' : self._calculateSentiment,
+                    'calculate-per-turn' : self._calculateSentimentPerTurn
         }
 
 
@@ -54,6 +56,7 @@ class Sentiment(controllers.base.Base):
         dialog.LoadFromFile(args['inpFile'])
         dt = dialog.AsDataFrame()
         dt = dt.apply(lambda row: extractor.ExtractFeaturesSentence(row), axis = 1)
+        dt.fillna(0, inplace = True)
 
         fOutName = args['outputFile']
         if fOutName is None:
@@ -64,13 +67,32 @@ class Sentiment(controllers.base.Base):
 
     # calculates sentiment per file
     def _calculateSentiment(self):
+        args = vars(self.argParser.parse_args())
+        helper = FileHelper()
+        fNameRaw = helper.GetFileName(args['inpFile'])
         model = predict.Predict()
         model.LoadModel()
 
-        dt = pd.from_csv(args['inpFile'])
+        dt = pd.read_csv(args['inpFile'])
         predicted = model.Predict(dt)
         dt['sentiment'] = predicted
         fOutName = args['outputFile']
         if fOutName is None:
             fOutName = self.parsedDataDir + fNameRaw + self.pathSeparator + fNameRaw + ".sentiment"
         dt.to_csv(fOutName)
+
+
+    # calculate sentiment per turn based on sentence sentiment
+    def _calculateSentimentPerTurn(self):
+        args = vars(self.argParser.parse_args())
+        helper = FileHelper()
+        fNameRaw = helper.GetFileName(args['inpFile'])
+        model = predict.Predict()
+
+        fDialogName = self.parsedDataDir + fNameRaw + self.pathSeparator + fNameRaw + ".dialog"
+        dt_dialog = pd.read_csv(fDialogName)
+        dt_dialog['turn'] = dt_dialog.index
+        dt_sentiment = pd.read_csv(args['inpFile'])
+
+        dt_dialog = model.CalculateByTurns(dt_sentiment, dt_dialog)
+        dt_dialog.to_csv(fDialogName, index = False)

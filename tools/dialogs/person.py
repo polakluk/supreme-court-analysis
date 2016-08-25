@@ -9,7 +9,8 @@ class Person(object):
 				'name' : '',
 				'text' : '',
 				'was_interrupted' : False,
-				'role' : 'other'
+				'role' : 'other',
+				'turn' : 0
 			}
 
 

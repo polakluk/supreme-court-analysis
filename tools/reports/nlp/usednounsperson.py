@@ -14,6 +14,7 @@ class UsedNounsPerson(object):
 	def __init__(self, reportsDir):
 		self.__outputDir = reportsDir
 		self.__dialog = None
+		self.__dialog_pos = None
 		self.__nounPhrases = None
 		self.__synonymsProvider = None
 		self.__synonymSimilarity = 0.5
@@ -23,6 +24,16 @@ class UsedNounsPerson(object):
 	# sets dialog for this report
 	def SetDialog(self, newDialog):
 		self.__dialog = newDialog
+
+
+	# sets POS dialog for this report
+	def SetDialogPos(self, newDialog):
+		self.__dialog_pos = newDialog
+
+
+	# sets noun phrases
+	def SetNounPhrases(self, phrases):
+		self.__nounPhrases = phrases
 
 
 	# sets synonyms provider for this report
@@ -37,7 +48,7 @@ class UsedNounsPerson(object):
 	# loads noun phrases and caches them in array
 	def LoadNounPhrases(self):
 		report = nounPhrasePartsReport.NounPhraseParts(self.__outputDir)
-		report.SetDialog(self.__dialog)
+		report.SetDialog(self.__dialog_pos)
 		self.__nounPhrases = report.ExtractNounPhrases()
 
 
@@ -46,11 +57,11 @@ class UsedNounsPerson(object):
 		people = personDialog.Person()
 		# dont do anything unless everything is properly set up
 		# check, if noun phrases were loaded
-		if self.__nounPhrases == None:
+		if self.__nounPhrases is None:
 			self.LoadNounPhrases()
 
 		# check the noun phrases one more time - if they arent loaded up, then there arent any
-		if self.__nounPhrases == None:
+		if self.__nounPhrases is None:
 			return None
 
 		# prepare data structure

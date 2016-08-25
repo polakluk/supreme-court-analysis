@@ -14,7 +14,8 @@ class Test(controllers.base.Base):
 
     # method for testing code and short experiments
     def _test(self):
-        parser = negationParser.Negation()
-        data = parser.readFileRaw(None)
-        parser.saveFileCsv(data, None)
-        print(data)
+#        parser = negationParser.Negation()
+#        data = parser.readFileRaw(None)
+#        parser.saveFileCsv(data, None)
+#        print(data)
+        print "Test script"

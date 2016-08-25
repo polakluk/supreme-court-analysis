@@ -18,6 +18,7 @@ class FeatureExtract(object):
 
     # constructor
     def __init__(self, pprinter):
+        self.__pprinter = pprinter
         # constants
         self.__colTextArr = 'textArr'
         self.__colTextArrStemmed = 'textArrStemmed'
@@ -57,10 +58,13 @@ class FeatureExtract(object):
 
         # count negations
         row = self._count_negations(row)
+#        self.__pprinter.pprint("Counted negations")
         # then, calculate occurances of words from different subsets of dictionary
         row = self._calculate_required_sentence_column_counts(row)
+#        self.__pprinter.pprint("Calculated required sentences column counts")
         # moving on to calculate words around negations
         row = self._calculate_required_sentence_words_around_negations(row)
+#        self.__pprinter.pprint("Calculated required words around")
         # and dominant groups of words
         row = self._calculate_required_more_than_other(row)
 
@@ -69,11 +73,12 @@ class FeatureExtract(object):
         row = self._generate_n_grams_sentence(row)
         # then, calculate statistics
         row = self._calculate_required_before_after_ngrams_sentence(row)
+#        self.__pprinter.pprint("Calculated required before and after ngrams")
         # now, generate POS N-grams
         row = self._create_required_n_grams_pos(row)
         # and calculate statistics for them too
         row = self._generate_required_pos_stats(row)
-
+#        self.__pprinter.pprint("Calculated required POS stats")
         return row
 
 
@@ -242,8 +247,8 @@ class FeatureExtract(object):
             row['punctuation'] = ord(last_character)
         else:
             if last_character in '"\'':
-                penultimate_character = row['text'][-2:-1]
-                if penultimate_character in '?!.':
+                penultimate_character = row[self.__colText][-2:-1]
+                if len(penultimate_character) > 0 and (penultimate_character in "?!."):
                     row['punctuation'] = ord(penultimate_character)
                 else:
                     row['punctuation'] = None

@@ -20,8 +20,8 @@ class Basic(object):
 		actFile = open(fileName, 'r')
 		outFile = open(newFileName, 'w+')
 		firstPartDone = False	# checks, if the introduction part is done and arugment can be added to output file
-		reProceedings = re.compile("P R O C E E D I N G S\s*\(\d{2}:\d{2}\s(a|p)\.m\.\)");
-		reCaseSubmitted = re.compile("The case is submitted\.\s*\(Whereupon,");
+		reProceedings = re.compile("P R O C E E D I N G S\s*\(\d{2}:\d{2}\s(a|p)\.m\.\)")
+		reCaseSubmitted = re.compile("The case is submitted\.\s*\(Whereupon,")
 
 		prevTwoLines = ['','']
 		res = []

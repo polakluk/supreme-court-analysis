@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 # general imports
 from  tools.filehelper import FileHelper
 
@@ -8,6 +10,7 @@ import pyocr
 import pyocr.builders
 import io
 import ctypes
+import re
 
 MagickEvaluateImage = wand.api.library.MagickEvaluateImage
 MagickEvaluateImage.argtypes = [ctypes.c_void_p, ctypes.c_int, ctypes.c_double]
@@ -25,6 +28,7 @@ class TesseractOcr(object):
 		self.__dpi = 300
 		self.__debug = isDebug
 
+
 	def evaluate(self, img, operation, argument):
 		MagickEvaluateImage(
 			img.wand,
@@ -39,6 +43,9 @@ class TesseractOcr(object):
 		tool = pyocr.get_available_tools()[0]
 		lang = tool.get_available_languages()[1]
 
+		# this could've been done better, but for now will do
+		reCaseSubmitted = re.compile(ur'The case is submitted\.\s*\(Whereupon,', re.UNICODE)
+
 		req_image = []
 		final_text = []
 
@@ -46,17 +53,65 @@ class TesseractOcr(object):
 		helper = FileHelper()
 		outfp = open(self.__outputDir + helper.GetFileName(pdfFile) + ".plain", 'w')
 
-		image_pdf = Image(filename=pdfFile, resolution=self.__dpi)
-		image_pngs = image_pdf.convert('png')
-		idx = 0
-		for img in image_pngs.sequence:
-			if self.__debug:
-				print "Parsing Page: " + str(idx + 1)
-			cloneImg = img[self.__img_crop[0] : self.__img_crop[2], self.__img_crop[1] : self.__img_crop[3] ]
-#			cloneImg.save(filename = './img_{}.png'.format(idx))
+		with Image(filename=pdfFile, resolution=self.__dpi) as image_pdf:
+			image_pngs = image_pdf.convert('png')
+			idx = 0
+			output_text = ''
+			for img in image_pngs.sequence:
+				if self.__debug:
+					print "Parsing Page: " + str(idx + 1)
+				cloneImg = img[self.__img_crop[0] : self.__img_crop[2], self.__img_crop[1] : self.__img_crop[3] ]
+				cloneImg.alpha_channel = False
+#				cloneImg.save(filename = './img_{}.png'.format(idx))
+				self.evaluate( cloneImg, 'threshold', self.__threshold)
+
+				txt = tool.image_to_string( PI.open(io.BytesIO(cloneImg.make_blob('png'))), lang=lang, builder=pyocr.builders.TextBuilder())+ "\n"
+				output_text = output_text + txt
+				if reCaseSubmitted.search(txt) != None:
+					break
+				idx += 1
+
+		outfp.write(self._clean_text(output_text))
+
+
+	def _clean_text(self, txt):
+		res = txt.replace(u'—','-')
+		res = res.replace(u'‘','\'')
+		res = res.replace(u'’','\'')
+		res = res.replace(u'\xa7','')
+		res = res.encode('ASCII')
+		return res
+
+
+	def testPdf(self, pdfFile, idx, mode = 'top-right'):
+		mode = 0 if mode == 'top-right' else 1
+		self.__img_crop = self.__img_crop_modes[mode]
+		tool = pyocr.get_available_tools()[0]
+		lang = tool.get_available_languages()[1]
+
+		req_image = []
+		final_text = []
+		reCaseSubmitted = re.compile(ur'The case is submitted\.\s*\(Whereupon,', re.UNICODE)
+
+		# get file name
+		helper = FileHelper()
+		outfp = open(self.__outputDir + helper.GetFileName(pdfFile) + ".plain", 'w')
+
+#		image_pdf = Image(filename=pdfFile, resolution=self.__dpi)
+#		image_pngs = image_pdf.convert('png')
+#		img = image_pngs.sequence[idx]
+		with Image(filename = pdfFile) as img:
+#			if self.__debug:
+#				print "Parsing Page: " + str(idx + 1)
+			cloneImg = img
+			#img[self.__img_crop[0] : self.__img_crop[2], self.__img_crop[1] : self.__img_crop[3] ]
+			cloneImg.alpha_channel = False
+	#		cloneImg.save(filename = './img_{}.png'.format(idx))
 			self.evaluate( cloneImg, 'threshold', self.__threshold)
 
 			txt = tool.image_to_string( PI.open(io.BytesIO(cloneImg.make_blob('png'))), lang=lang, builder=pyocr.builders.TextBuilder())+ "\n"
-			outfp.write(txt.encode("utf8"))
-			idx += 1
-		return 0
+			print(reCaseSubmitted.search(txt) != None)
+
+
+#			print(txt[0:70])
+			print(self._clean_text(txt))

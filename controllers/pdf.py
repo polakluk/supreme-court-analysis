@@ -18,6 +18,7 @@ class Pdf(controllers.base.Base):
     def __init__(self, pprinter, argParse):
         controllers.base.Base.__init__(self, pprinter, argParse)
         self.availableTask = {
+                                'test-read': self._testRead,
                                 'read-pdf': self._readPdfFile, # step 1
                                 'process-pdf' : self._preprocessInputFile, # step 2
                                 'extract-parts' : self._extractPartsDialog, # step 3
@@ -34,12 +35,22 @@ class Pdf(controllers.base.Base):
         self.parserInitialized = True
 
 
+    def _testRead(self):
+        args = self.argParser.parse_args()
+        fileName = args.filename
+    #	currentParser = pdfParser.Pdf(".\\parsed-data\\")
+    	currentParser = TesseractParser.TesseractOcr(self.parsedDataDir)
+    	currentParser.testPdf(fileName, 0, args.mode)
+
+
     # read PDF file
     def _readPdfFile(self):
         args = self.argParser.parse_args()
         fileName = args.filename
     #	currentParser = pdfParser.Pdf(".\\parsed-data\\")
     	currentParser = TesseractParser.TesseractOcr(self.parsedDataDir)
+    	cleaner = basic.Basic(self.parsedDataDir);
+#        currentParser.SetCleaner(cleaner)
     	currentParser.readFile(fileName, args['mode'])
 
 

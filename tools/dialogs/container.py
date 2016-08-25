@@ -29,6 +29,7 @@ class Container(object):
 		with open(filename, 'rb') as csvfile:
 			reader = csv.reader(csvfile, delimiter=',')
 			skippedFirstLine = False
+			readSentiment = False
 			for row in reader:
 				# skip header line
 				if skippedFirstLine:
@@ -37,6 +38,10 @@ class Container(object):
 					obj['name'] = row[1]
 					obj['text'] = row[2]
 					obj['was_interrupted'] = row[3] == '1'
+					obj['turn'] = (int)(row[4])
+					if readSentiment:
+						obj['sentiment'] = row[5]
 					self.__dialog.append(obj)
 				else:
+					readSentiment = len(row) > 5
 					skippedFirstLine = True

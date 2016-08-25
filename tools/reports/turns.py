@@ -43,11 +43,11 @@ class Turns(object):
 				continue
 
 			actPerson = part['role']+ "|" + part['name']
-			if actPerson == previousPerson or previousPerson == None:
+			if actPerson == previousPerson or previousPerson is None:
 				# the chain continues
 				actCounter += 1
 			else:
-				# the chain of talks jus broke, so keep track of this, if you need to
+				# the chain of talks just broke, so keep track of this, if you need to
 				if res[previousPerson] < actCounter:
 					res[previousPerson] = actCounter
 

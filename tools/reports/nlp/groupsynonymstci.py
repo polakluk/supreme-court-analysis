@@ -14,12 +14,18 @@ class GroupSynonymsTci(object):
 	def __init__(self, reportsDir):
 		self.__outputDir = reportsDir
 		self.__dialog = None
+		self.__dialog_pos = None
 		self.__simProvider = None
 
 
 	# sets dialog for this report
 	def SetDialog(self, newDialog):
 		self.__dialog = newDialog
+
+
+	# sets POS dialog for this report
+	def SetDialogPos(self, newDialog):
+		self.__dialog_pos = newDialog
 
 
 	# sets similarity provider

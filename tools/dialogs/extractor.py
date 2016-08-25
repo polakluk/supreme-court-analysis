@@ -36,6 +36,7 @@ class Extractor(object):
 		# Usually, the last part in dialog is confirmation that the argument is over
 		prevPerson = {}
 		actPerson = None
+		turn = 0
 		for person in reFindPeople.finditer(text):
 			#swap person
 			prevPerson = actPerson
@@ -45,6 +46,7 @@ class Extractor(object):
 
 			actPerson['name'] = person.group(3).strip()
 			actPerson['role'] = self.__identifyRole(person.group(2).strip())
+			actPerson['turn'] = turn
 
 			# if this is the first person to be processed,
 			# set the marker to position AFTER peron's name
@@ -65,6 +67,7 @@ class Extractor(object):
 
 
 			lastMessageEnded = person.end() + 1
+			turn += 1
 
 		actPerson['text'] = self.__clearTextPart( text[lastMessageEnded:] )
 		res.append(actPerson)
@@ -98,9 +101,9 @@ class Extractor(object):
 
 		with open(self.__outputDir + fileName, 'wb') as csvfile:
 			writer = csv.writer(csvfile, delimiter = ',')
-			writer.writerow(['Role', 'Name', 'Text', 'Was Interrupted'])
+			writer.writerow(['role', 'name', 'text', 'was interrupted', 'turn'])
 			for row in data:
 				was_interrupted = '0'
 				if row['was_interrupted']:
 					was_interrupted = '1'
-				writer.writerow([row['role'], row['name'], row['text'], was_interrupted])
+				writer.writerow([row['role'], row['name'], row['text'], was_interrupted, row['turn']])

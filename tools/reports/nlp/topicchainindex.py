@@ -13,12 +13,19 @@ class TopicChainIndex(object):
     def __init__(self, reportsDir):
         self.__outputDir = reportsDir
         self.__dialog = None
-        self.__tthreshold = 2 # threshold for nouns which should be used for TCI computation
+        self.__dialog_pos = None
+        self.__threshold = 2 # threshold for nouns which should be used for TCI computation
 
 
     # sets dialog for this report
     def SetDialog(self, newDialog):
         self.__dialog = newDialog
+
+
+    # sets POS dialog for this report
+    def SetDialogPos(self, newDialog):
+        self.__dialog_pos = newDialog
+
 
     # sets threshold for used nouns
     def SetThreshold(self, threshold):

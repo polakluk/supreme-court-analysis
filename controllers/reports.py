@@ -28,7 +28,7 @@ class Reports(controllers.base.Base):
         controllers.base.Base.__init__(self, pprinter, argParse)
         self.availableTask = {
                                 'nlp-report' : self._nlpReports,
-                                'report' : self._genericReports
+                                'basic' : self._genericReports
         }
 
 
@@ -47,7 +47,7 @@ class Reports(controllers.base.Base):
         args = self.argParser.parse_args()
         fileName = args.filename
         if args.outputDir != None:
-            self.reportDatadir = args.outputDir
+            self.reportDataDir = args.outputDir
     	dialog = dialogContainer.Container()
     	dialog.LoadFromFile(fileName)
 
@@ -118,26 +118,30 @@ class Reports(controllers.base.Base):
         args = self.argParser.parse_args()
         fileName = args.filename
         if args.outputDir != None:
-            self.reportDatadir = args.outputDir
+            self.reportDataDir = args.outputDir
 
         helper = dialogHelper.Helper()
     	dialogPos = dialogPosDialog.PosDialog(self.reportDataDir)
-    	dialogPos.LoadFromFile(fileName)
-        dialogPos.SetDialog( helper.AssignPositionsPartsDialog( dialogPos.GetDialog() ) )
-#        self.__pprinter.pprint(dialogPos.GetDialog())
-        people = helper.GetListPeople(dialogPos.GetDialog())
+    	dialogPos.LoadFromFile(fileName+'.pos')
+
+    	dialog = dialogContainer.Container()
+    	dialog.LoadFromFile(fileName+".dialog")
+        dialog.SetDialog( helper.AssignPositionsPartsDialog( dialog.GetDialog() ) )
+        people = helper.GetListPeople(dialog.GetDialog())
 
     	report1 = nounPhrasePartsReport.NounPhraseParts(self.reportDataDir)
     	report1.SetDialog(dialogPos)
 
-#    	nouns = report1.ExtractNounPhrases()
+    	nouns_raw = report1.ExtractNounPhrases()
     	if self.debug:
     		self.pprint.pprint("")
     		self.pprint.pprint("")
     		self.pprint.pprint("############ NLP Report #1 - Noun Phrases Parts")
 
     	report2 = usedNounsPersonReport.UsedNounsPerson(self.reportDataDir)
-    	report2.SetDialog(dialogPos)
+    	report2.SetDialog(dialog)
+        report2.SetDialogPos(dialogPos)
+        report2.SetNounPhrases(nouns_raw)
 
     	nouns = report2.FindUsedNounsRaw()
         if self.debug:
@@ -148,7 +152,8 @@ class Reports(controllers.base.Base):
         report2.SaveToFile(nouns)
 
         report3 = topicChainIndexReport.TopicChainIndex(self.reportDataDir)
-    	report3.SetDialog(dialogPos)
+    	report3.SetDialogPos(dialogPos)
+        report3.SetDialog(dialog)
         report3.SetThreshold(3)
         chains = report3.CalculateTci(nouns)
         if self.debug:
@@ -157,7 +162,7 @@ class Reports(controllers.base.Base):
             self.pprint.pprint("############ NLP Report #3 - Topic Chain Index (treshold = 3)")
             self.__pprinter.pprint(chains)
         report3.SaveToFile(chains)
-
+        return
         simProvider = wordnetLinSyns.Lin()
         simProvider.SetSimilarity(0.1)
         report4 = groupSynonymsTciReport.GroupSynonymsTci(self.reportDataDir)

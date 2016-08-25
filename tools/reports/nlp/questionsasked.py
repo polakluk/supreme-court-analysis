@@ -13,6 +13,7 @@ class QuestionsAsked(object):
 	def __init__(self, reportsDir):
 		self.__outputDir = reportsDir
 		self.__dialog = None
+		self.__dialog_pos = None
 		self.__nounPhrases = None
 		self.__synonymsProvider = None
 		self.__synonymSimilarity = 0.5
@@ -21,6 +22,11 @@ class QuestionsAsked(object):
 	# sets dialog for this report
 	def SetDialog(self, newDialog):
 		self.__dialog = newDialog
+
+
+	# sets POS dialog for this report
+	def SetDialogPos(self, newDialog):
+		self.__dialog_pos = newDialog
 
 
 	# sets synonyms provider for this report
