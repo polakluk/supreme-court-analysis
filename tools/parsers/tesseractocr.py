@@ -45,6 +45,7 @@ class TesseractOcr(object):
 
 		# this could've been done better, but for now will do
 		reCaseSubmitted = re.compile(ur'The case is submitted\.\s*\(Whereupon,', re.UNICODE)
+		reCaseSubmitted2 = re.compile(ur'Case is submitted\.\s*\(Whereupon,', re.UNICODE)
 
 		req_image = []
 		final_text = []
@@ -67,7 +68,7 @@ class TesseractOcr(object):
 
 				txt = tool.image_to_string( PI.open(io.BytesIO(cloneImg.make_blob('png'))), lang=lang, builder=pyocr.builders.TextBuilder())+ "\n"
 				output_text = output_text + txt
-				if reCaseSubmitted.search(txt) != None:
+				if reCaseSubmitted.search(txt) != None or reCaseSubmitted2.search(txt) != None:
 					break
 				idx += 1
 

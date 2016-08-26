@@ -21,7 +21,8 @@ class Basic(object):
 		outFile = open(newFileName, 'w+')
 		firstPartDone = False	# checks, if the introduction part is done and arugment can be added to output file
 		reProceedings = re.compile("P R O C E E D I N G S\s*\(\d{2}:\d{2}\s(a|p)\.m\.\)")
-		reCaseSubmitted = re.compile("The case is submitted\.\s*\(Whereupon,")
+		reCaseSubmitted = re.compile(ur'The case is submitted\.\s*\(Whereupon,', re.UNICODE)
+		reCaseSubmitted2 = re.compile(ur'Case is submitted\.\s*\(Whereupon,', re.UNICODE)
 
 		prevTwoLines = ['','']
 		res = []
@@ -43,7 +44,7 @@ class Basic(object):
 				continue
 
 			# check, if the case was submitted => end reading the file and do not write the previous line to clean file
-			if reCaseSubmitted.search(actLine) != None:
+			if reCaseSubmitted.search(actLine) != None or reCaseSubmitted2.search(actLine) != None:
 				res.pop()
 				break
 
