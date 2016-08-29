@@ -1,6 +1,7 @@
 *.pyc
 *.dump
 report-data
+parsed-data
 .ipynb_checkpoints
 corpora/large-movie-review/test
 corpora/large-movie-review/train

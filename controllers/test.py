@@ -1,6 +1,7 @@
 import controllers.base
 import re
 from tools.parsers import negation as negationParser
+from tools.filehelper import FileHelper
 
 class Test(controllers.base.Base):
 
@@ -18,4 +19,6 @@ class Test(controllers.base.Base):
 #        data = parser.readFileRaw(None)
 #        parser.saveFileCsv(data, None)
 #        print(data)
-        print "Test script"
+        helper = FileHelper()
+        fNameRaw = helper.GetFileName('.\arguments\modes.info')
+        print fNameRaw

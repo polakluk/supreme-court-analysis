@@ -98,3 +98,13 @@ class Person(object):
 				'sentence' : sent,
 				'sentence_id' : sent_id
 				}
+
+
+	def GetPolarizedTurnsPerson(self, nameRole, count, sentiment ):
+		data = nameRole.split('|')
+		return {
+				'name' : data[0],
+				'role' : data[1],
+				'polarized-class' : sentiment,
+				'turns' : count
+				}

@@ -46,6 +46,7 @@ class TesseractOcr(object):
 		# this could've been done better, but for now will do
 		reCaseSubmitted = re.compile(ur'The case is submitted\.\s*\(Whereupon,', re.UNICODE)
 		reCaseSubmitted2 = re.compile(ur'Case is submitted\.\s*\(Whereupon,', re.UNICODE)
+		reCaseSubmitted3 = re.compile(ur'\(?Whereupon, at \w\w:\w\w', re.UNICODE) # the most-relaxed
 
 		req_image = []
 		final_text = []
@@ -67,12 +68,12 @@ class TesseractOcr(object):
 				self.evaluate( cloneImg, 'threshold', self.__threshold)
 
 				txt = tool.image_to_string( PI.open(io.BytesIO(cloneImg.make_blob('png'))), lang=lang, builder=pyocr.builders.TextBuilder())+ "\n"
-				output_text = output_text + txt
-				if reCaseSubmitted.search(txt) != None or reCaseSubmitted2.search(txt) != None:
+				output_text = output_text + self._clean_text(txt)
+				if reCaseSubmitted.search(txt) != None or reCaseSubmitted2.search(txt) != None or reCaseSubmitted3.search(txt) != None:
 					break
 				idx += 1
 
-		outfp.write(self._clean_text(output_text))
+		outfp.write(output_text)
 
 
 	def _clean_text(self, txt):
@@ -80,6 +81,8 @@ class TesseractOcr(object):
 		res = res.replace(u'‘','\'')
 		res = res.replace(u'’','\'')
 		res = res.replace(u'\xa7','')
+		res = res.replace(u'\u201c', '"')
+		res = res.replace(u'\u201d', '"')
 		res = res.encode('ASCII')
 		return res
 
@@ -92,11 +95,10 @@ class TesseractOcr(object):
 
 		req_image = []
 		final_text = []
-		reCaseSubmitted = re.compile(ur'The case is submitted\.\s*\(Whereupon,', re.UNICODE)
-
+		reCaseSubmitted = re.compile(ur'\(Whereupon, at \w\w:\w\w', re.UNICODE)
 		# get file name
 		helper = FileHelper()
-		outfp = open(self.__outputDir + helper.GetFileName(pdfFile) + ".plain", 'w')
+#		outfp = open(self.__outputDir + helper.GetFileName(pdfFile) + ".plain", 'w')
 
 #		image_pdf = Image(filename=pdfFile, resolution=self.__dpi)
 #		image_pngs = image_pdf.convert('png')
@@ -111,8 +113,9 @@ class TesseractOcr(object):
 			self.evaluate( cloneImg, 'threshold', self.__threshold)
 
 			txt = tool.image_to_string( PI.open(io.BytesIO(cloneImg.make_blob('png'))), lang=lang, builder=pyocr.builders.TextBuilder())+ "\n"
-			print(reCaseSubmitted.search(txt) != None)
+			test = self._clean_text(txt)
+			print(reCaseSubmitted.search(test) != None)
+			print("#############################################################")
 
-
-#			print(txt[0:70])
+#			print(txt[1000:1179])
 			print(self._clean_text(txt))

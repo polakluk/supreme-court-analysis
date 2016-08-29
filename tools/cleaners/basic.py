@@ -21,12 +21,18 @@ class Basic(object):
 		outFile = open(newFileName, 'w+')
 		firstPartDone = False	# checks, if the introduction part is done and arugment can be added to output file
 		reProceedings = re.compile("P R O C E E D I N G S\s*\(\d{2}:\d{2}\s(a|p)\.m\.\)")
+		reProceedings2 = re.compile("P R O C E E D I N G S")
 		reCaseSubmitted = re.compile(ur'The case is submitted\.\s*\(Whereupon,', re.UNICODE)
 		reCaseSubmitted2 = re.compile(ur'Case is submitted\.\s*\(Whereupon,', re.UNICODE)
 
 		prevTwoLines = ['','']
 		res = []
+		writeCurrent = True
 		for line in actFile:
+			if writeCurrent == False: # in case I need to skip 2 lines
+				writeCurrent = True
+				prevTwoLines = ['', '']
+				continue
 			 # trim white spaces and get rid of wierd unicode character
 			line = self.__preprocessLine(line)
 
@@ -41,6 +47,10 @@ class Basic(object):
 			# is this the beginning of proceeding?
 			if reProceedings.search(actLine) != None:
 				firstPartDone = True
+				continue
+			elif reProceedings2.search(actLine) != None:
+				firstPartDone = True
+				writeCurrent = False
 				continue
 
 			# check, if the case was submitted => end reading the file and do not write the previous line to clean file

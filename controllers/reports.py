@@ -20,6 +20,7 @@ from tools.reports.nlp import nounphraseparts as nounPhrasePartsReport
 from tools.reports.nlp import usednounsperson as usedNounsPersonReport
 from tools.reports.nlp import topicchainindex as topicChainIndexReport
 from tools.reports.nlp import groupsynonymstci as groupSynonymsTciReport
+from tools.reports.nlp import mostpolarized as mostpolarizedReport
 
 class Reports(controllers.base.Base):
 
@@ -129,6 +130,10 @@ class Reports(controllers.base.Base):
         dialog.SetDialog( helper.AssignPositionsPartsDialog( dialog.GetDialog() ) )
         people = helper.GetListPeople(dialog.GetDialog())
 
+        report4 = mostpolarizedReport.MostPolarized(self.reportDataDir, self.pprint)
+        report4.SetDialog(dialog)
+        report4.CalculatePolarizationCounts()
+        return
     	report1 = nounPhrasePartsReport.NounPhraseParts(self.reportDataDir)
     	report1.SetDialog(dialogPos)
 

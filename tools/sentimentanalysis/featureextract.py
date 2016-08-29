@@ -242,6 +242,10 @@ class FeatureExtract(object):
 
     # determines punctuation of a sentence
     def _get_punctuation(self, row):
+        if len(row[self.__colText]) < 2:
+            row['punctuation'] = ord('x')
+            return row
+
         last_character = row[self.__colText][-1:]
         if last_character in '?!.':
             row['punctuation'] = ord(last_character)
