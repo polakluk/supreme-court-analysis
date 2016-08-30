@@ -76,6 +76,7 @@ class TesseractOcr(object):
 		outfp.write(output_text)
 
 
+	# clean up pdf parsed text from unwanted characters
 	def _clean_text(self, txt):
 		res = txt.replace(u'—','-')
 		res = res.replace(u'‘','\'')
@@ -87,6 +88,7 @@ class TesseractOcr(object):
 		return res
 
 
+	# testing PDF parser
 	def testPdf(self, pdfFile, idx, mode = 'top-right'):
 		mode = 0 if mode == 'top-right' else 1
 		self.__img_crop = self.__img_crop_modes[mode]
