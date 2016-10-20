@@ -1,8 +1,8 @@
 import controllers.base
 
 # my tools
-from tools.parsers import pdf as pdfParser
-from tools.parsers import tesseractocr as TesseractParser
+from tools.parsers.pdf import pdf as pdfParser
+from tools.parsers.pdf import tesseractocr as TesseractParser
 from tools.cleaners import basic
 from tools.dialogs import extractor
 from tools.dialogs import container as dialogContainer

@@ -1,5 +1,5 @@
 import controllers.base
-from tools.parsers import largemoviereviews as largeMovieReviewsParser
+from tools.parsers.corpuses_sentiment import largemoviereviews as largeMovieReviewsParser
 
 class Largereviews(controllers.base.Base):
 

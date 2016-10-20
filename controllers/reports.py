@@ -6,6 +6,10 @@ from tools.dialogs import posdialog as dialogPosDialog
 from tools.dialogs import helper as dialogHelper
 from tools.synonyms import wordnet as wordnetSyns
 from tools.synonyms import lin as wordnetLinSyns
+from tools.filehelper import merger as mergerHelper
+#other tools
+from os import walk
+import pandas as pd
 
 # frequency reports
 from tools.reports import turns as turnsReport
@@ -29,7 +33,8 @@ class Reports(controllers.base.Base):
         controllers.base.Base.__init__(self, pprinter, argParse)
         self.availableTask = {
                                 'nlp-report' : self._nlpReports,
-                                'basic' : self._genericReports
+                                'basic' : self._genericReports,
+                                'merge-reports': self._mergeReports
         }
 
 
@@ -180,3 +185,17 @@ class Reports(controllers.base.Base):
             self.pprint.pprint("############ NLP Report #4 - Group Topic Chain Index by person using synonyms")
             self.pprint.pprint(grouppedChains)
 #        report4.SaveToFile(grouppedChains)
+
+
+    def _mergeReports(self):
+        list_reports = ['allturns', 'follow', 'followratio', 'mostfollow', 'usednouns', 'words']
+        for (dirpath, dirnames, filenames) in walk(self.reportDataDir):
+            for f_name in list_reports:
+                merger = mergerHelper.Merger()
+                for dir_name in dirnames:
+                    df = pd.read_csv(dirpath+dir_name+self.pathSeparator+f_name+'.csv')
+                    df['idx'] = df.index
+                    df['docket'] = dir_name
+                    merger.add_dataframe(df)
+
+                merger.export_dataframe(self.reportDataDir+f_name+'.csv')

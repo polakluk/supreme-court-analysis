@@ -6,7 +6,7 @@ import pandas as pd
 # my tools
 from tools.filehelper import FileHelper
 from tools.cleaners import basic
-from tools.parsers import tesseractocr as TesseractParser
+from tools.parsers.pdf import tesseractocr as TesseractParser
 from tools.dialogs import extractor
 from tools.dialogs import container as dialogContainer
 from tools.dialogs import posdialog as dialogPosDialog

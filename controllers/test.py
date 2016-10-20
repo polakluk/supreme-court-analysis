@@ -1,6 +1,5 @@
 import controllers.base
 import re
-from tools.parsers import negation as negationParser
 from tools.filehelper import FileHelper
 
 class Test(controllers.base.Base):
