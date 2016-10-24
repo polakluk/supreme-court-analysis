@@ -34,6 +34,7 @@ class Reports(controllers.base.Base):
         self.availableTask = {
                                 'nlp-report' : self._nlpReports,
                                 'basic' : self._genericReports,
+                                'flat-files' : self._flatFiles,
                                 'merge-reports': self._mergeReports
         }
 
@@ -186,9 +187,12 @@ class Reports(controllers.base.Base):
             self.pprint.pprint(grouppedChains)
 #        report4.SaveToFile(grouppedChains)
 
+    def _flatFiles(self):
+
 
     def _mergeReports(self):
-        list_reports = ['allturns', 'follow', 'followratio', 'mostfollow', 'usednouns', 'words']
+        list_reports = ['allturns', 'follow', 'followratio', 'mostfollow', 'usednouns', 'words',
+                        'turns', 'tci_3']
         for (dirpath, dirnames, filenames) in walk(self.reportDataDir):
             for f_name in list_reports:
                 merger = mergerHelper.Merger()

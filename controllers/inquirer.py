@@ -1,7 +1,7 @@
 import controllers.base
 
 # my tools
-from tools.parsers.corpuses_sentiment import generalinquirer as generalInquirerParser
+from tools.parsers.corpora_sentiment import generalinquirer as generalInquirerParser
 
 # Controller for handling work with General Inquirer corpus
 class Inquirer(controllers.base.Base):

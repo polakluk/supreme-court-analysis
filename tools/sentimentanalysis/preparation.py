@@ -4,8 +4,8 @@ import math
 import os
 
 # my tools
-from tools.parsers.corpuses_sentiment import mpqa as mpqaParser
-from tools.parsers.corpuses_sentiment import generalinquirer as generalInquirerParser
+from tools.parsers.corpora_sentiment import mpqa as mpqaParser
+from tools.parsers.corpora_sentiment import generalinquirer as generalInquirerParser
 
 
 # class that prepares data for training and testing phase

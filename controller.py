@@ -39,5 +39,5 @@ class Controller(object):
             controller.SetDebug(self.isDebug)
             controller.SetTimeIt(self.timeIt)
             controller.Execute()
-        except ImportError:
+        except ImportError as e:
             self.pprint.pprint("No controller found")

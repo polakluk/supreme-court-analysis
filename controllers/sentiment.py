@@ -1,8 +1,12 @@
 import pandas as pd
 import controllers.base
+#other tools
+from os import walk
+import pandas as pd
 
 # my tools
 from tools.filehelper import FileHelper
+from tools.filehelper import merger as mergerHelper
 from tools.dialogs import posdialog as dialogPosDialog
 from tools.sentimentanalysis import preparation, featureextract, predict
 
@@ -20,7 +24,8 @@ class Sentiment(controllers.base.Base):
                     'normalize-values' : self._normalizeValues,
                     'extract-features' : self._featureExtract,
                     'calculate-sentiment' : self._calculateSentiment,
-                    'calculate-per-turn' : self._calculateSentimentPerTurn
+                    'calculate-per-turn' : self._calculateSentimentPerTurn,
+                    'calculate-sentiment-all-files' : self._calculateSentmentAllTurns,
         }
 
 
@@ -96,3 +101,22 @@ class Sentiment(controllers.base.Base):
 
         dt_dialog = model.CalculateByTurns(dt_sentiment, dt_dialog)
         dt_dialog.to_csv(fDialogName, index = False)
+
+    # calculate sentiment for all cases
+    def _calculateSentmentAllTurns(self):
+        merger = mergerHelper.Merger()
+        args = vars(self.argParser.parse_args())
+        helper = FileHelper()
+        model = predict.Predict()
+        for (dirpath, dirnames, filenames) in walk(args['inpFile']):
+            for dir_name in dirnames:
+                self.pprint.pprint('{} - {} ==> {}'.format(dirpath, dir_name, filenames))
+                fNameRaw = helper.GetFileName(args['inpFile'])
+
+                fDialogName = dirpath + dir_name + self.pathSeparator + dir_name + ".dialog"
+                dt_dialog = pd.read_csv(fDialogName)
+                dt_dialog['idx'] = dt_dialog.index
+                dt_dialog['docket'] = dir_name
+                merger.add_dataframe(dt_dialog)
+
+        merger.export_dataframe(args['outputFile']+'dialog.csv')

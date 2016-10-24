@@ -3,9 +3,9 @@ import numpy as np
 import string
 
 # my tools
-from tools.parsers.corpuses_sentiment import mpqa as mpqaParser
-from tools.parsers.corpuses_sentiment import generalinquirer as generalInquirerParser
-from tools.parsers.corpuses_sentiment import negation as negationParser
+from tools.parsers.corpora_sentiment import mpqa as mpqaParser
+from tools.parsers.corpora_sentiment import generalinquirer as generalInquirerParser
+from tools.parsers.corpora_sentiment import negation as negationParser
 from tools.sentimentanalysis import preparation
 
 # NLTK tools

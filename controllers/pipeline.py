@@ -42,7 +42,8 @@ class Pipeline(controllers.base.Base):
         controllers.base.Base.__init__(self, pprinter, argParse)
         self.availableTask = {
                                 'all-tasks': self._all_tasks,
-                                'all-tasks-dir' : self._all_files_directory
+                                'all-tasks-dir' : self._all_files_directory,
+                                'all-tasks-dir-no-pdf' : self._all_files_directory_no_pdf,
         }
         self.__info_file = 'modes.info'
         self.__model = None
@@ -56,6 +57,7 @@ class Pipeline(controllers.base.Base):
         # extract input file name
         self.argParser.add_argument('-f', help="Input Filename", dest="filename", required = True)
         self.argParser.add_argument('-m', help="PDF mode", dest="mode", required = False)
+        self.argParser.add_argument('-s', help="Requested step", dest="step", required = False)
         self.parserInitialized = True
 
 
@@ -71,7 +73,7 @@ class Pipeline(controllers.base.Base):
                 if modes[modes['argument'] == fName].shape[0] == 0:
                     self.pprint.pprint("Not found {}".format(fName))
                 else:
-                    self._run_pipeline(args.filename + fName, current_mode.values[0])
+                    self._run_pipeline(args.filename + fName, modePdf=current_mode.values[0])
             break
 
 
@@ -81,9 +83,17 @@ class Pipeline(controllers.base.Base):
         self._run_pipeline(args.filename, args.mode)
 
 
+    # walks the parsed directory and recomputes everything
+    def _all_files_directory_no_pdf(self):
+        args = self.argParser.parse_args()
+        for (dirpath, dirnames, filenames) in walk(self.parsedDataDir):
+            for fName in dirnames:
+                self._run_pipeline(self.parsedDataDir + fName + self.pathSeparator + fName + '.plain', noPdf=True, step=args.step)
+            break
+
+
     # starts pipeline for one specific file
-    def _run_pipeline(self, fRaw, modePdf):
-        self.pprint.pprint("************** "+fRaw)
+    def _run_pipeline(self, fRaw, modePdf=None, noPdf=False, step=None):
         helper = FileHelper()
         fNameRaw = helper.GetFileName(fRaw)
         # Step 0 - Create directories
@@ -93,80 +103,89 @@ class Pipeline(controllers.base.Base):
             os.makedirs(self.reportDataDir + fNameRaw + self.pathSeparator)
 
         # Step 1 - Read PDF file
-        if self.__parser_pdf is None:
-            self.__parser_pdf = TesseractParser.TesseractOcr(self.parsedDataDir + fNameRaw + self.pathSeparator)
-        self.__parser_pdf.readFile(fRaw, modePdf)
-        print("Step 1 - Done")
+        if not noPdf:
+            if self.__parser_pdf is None:
+                self.__parser_pdf = TesseractParser.TesseractOcr(self.parsedDataDir + fNameRaw + self.pathSeparator)
+            self.__parser_pdf.readFile(fRaw, modePdf)
+            print("Step 1 - Done")
 
         # Step 2 - Clean up the file afterwards
-        pdfFileRaw = self.parsedDataDir + fNameRaw + self.pathSeparator + fNameRaw  + ".plain"
-        pdfFileClean = self.parsedDataDir + fNameRaw + self.pathSeparator + fNameRaw  + ".clean"
-        cleaner = basic.Basic(self.parsedDataDir + fNameRaw + self.pathSeparator )
-        cleaner.cleanUp(pdfFileRaw);
-        print("Step 2 - Done")
+        if step == 'step-2' or step is None:
+            pdfFileRaw = self.parsedDataDir + fNameRaw + self.pathSeparator + fNameRaw  + ".plain"
+            pdfFileClean = self.parsedDataDir + fNameRaw + self.pathSeparator + fNameRaw  + ".clean"
+            cleaner = basic.Basic(self.parsedDataDir + fNameRaw + self.pathSeparator )
+            cleaner.cleanUp(pdfFileRaw);
+            print("Step 2 - Done")
 
         # Step 3 - Split it into dialog parts
-        pdfFileDialog = self.parsedDataDir + fNameRaw + self.pathSeparator + fNameRaw  + ".dialog"
-        with open(pdfFileClean, "r") as cleanFile:
-            extractTool = extractor.Extractor(self.parsedDataDir + fNameRaw + self.pathSeparator , False)
-            dialogParts = extractTool.Extract(cleanFile.read())
-            extractTool.SaveToFile(dialogParts, pdfFileDialog)
-        print("Step 3 - Done")
+        if step == 'step-3' or step is None:
+            pdfFileDialog = self.parsedDataDir + fNameRaw + self.pathSeparator + fNameRaw  + ".dialog"
+            with open(pdfFileClean, "r") as cleanFile:
+                extractTool = extractor.Extractor(self.parsedDataDir + fNameRaw + self.pathSeparator , False)
+                dialogParts = extractTool.Extract(cleanFile.read())
+                extractTool.SaveToFile(dialogParts, pdfFileDialog)
+            print("Step 3 - Done")
 
         # Step 4 - Split into sentences
-        pdfFileSent = self.parsedDataDir + fNameRaw + self.pathSeparator + fNameRaw  + ".sentences"
-        if self.__pos_tagger is None:
-            self.__pos_tagger = textBlobPosTagger.TextBlobPosTagger()
-        dialog = dialogContainer.Container()
-        dialog.LoadFromFile(pdfFileDialog)
-        dialogSent = dialogSentenceDialog.SentenceDialog(self.parsedDataDir + fNameRaw + self.pathSeparator, self.debug)
-        dialogSent.SetDialog(dialog)
-        dialogSent.SetPosTagger(self.__pos_tagger)
-        dialogSent.SplitTurnsToSentences()
-        dialogSent.SaveToFile(fNameRaw+".sentences")
-        print("Step 4 - Done")
+        if step == 'step-4' or step is None:
+            pdfFileSent = self.parsedDataDir + fNameRaw + self.pathSeparator + fNameRaw  + ".sentences"
+            if self.__pos_tagger is None:
+                self.__pos_tagger = textBlobPosTagger.TextBlobPosTagger()
+            dialog = dialogContainer.Container()
+            dialog.LoadFromFile(pdfFileDialog)
+            dialogSent = dialogSentenceDialog.SentenceDialog(self.parsedDataDir + fNameRaw + self.pathSeparator, self.debug)
+            dialogSent.SetDialog(dialog)
+            dialogSent.SetPosTagger(self.__pos_tagger)
+            dialogSent.SplitTurnsToSentences()
+            dialogSent.SaveToFile(fNameRaw+".sentences")
+            print("Step 4 - Done")
 
         # Step 5 - Detect POS tags
-        pdfFilePos = self.parsedDataDir + fNameRaw + self.pathSeparator + fNameRaw  + ".pos"
-        dialogPos = dialogPosDialog.PosDialog(self.parsedDataDir + fNameRaw + self.pathSeparator, self.debug)
-        dialogPos.SetDialogSent(dialogSent)
-        dialogPos.SetPosTagger(self.__pos_tagger)
-        data = dialogPos.GetPosTaggedParts()
-        dialogPos.SaveToFile(fNameRaw+".pos")
-        print("Step 5 - Done")
+        if step == 'step-5' or step is None:
+            pdfFilePos = self.parsedDataDir + fNameRaw + self.pathSeparator + fNameRaw  + ".pos"
+            dialogPos = dialogPosDialog.PosDialog(self.parsedDataDir + fNameRaw + self.pathSeparator, self.debug)
+            dialogPos.SetDialogSent(dialogSent)
+            dialogPos.SetPosTagger(self.__pos_tagger)
+            data = dialogPos.GetPosTaggedParts()
+            dialogPos.SaveToFile(fNameRaw+".pos")
+            print("Step 5 - Done")
 
         # Step 5 - Feature Extracct
-        pdfFilePos = self.parsedDataDir + fNameRaw + self.pathSeparator + fNameRaw  + ".pos"
-        if self.__feature_extract is None:
-            self.__feature_extract = featureextract.FeatureExtract(self.pprint)
-            self.__feature_extract.Initialize()
+        if step == 'step-6' or step is None:
+            pdfFilePos = self.parsedDataDir + fNameRaw + self.pathSeparator + fNameRaw  + ".pos"
+            if self.__feature_extract is None:
+                self.__feature_extract = featureextract.FeatureExtract(self.pprint)
+                self.__feature_extract.Initialize()
 
-        dt_sentiment = dialogPos.AsDataFrame()
-        dt_sentiment = dt_sentiment.apply(lambda row: self.__feature_extract.ExtractFeaturesSentence(row), axis = 1)
-        dt_sentiment.fillna(0, inplace = True)
-        dt_sentiment.to_csv(self.parsedDataDir + fNameRaw + self.pathSeparator + fNameRaw+".features")
-        print("Step 6 - Done")
+            dt_sentiment = dialogPos.AsDataFrame()
+            dt_sentiment = dt_sentiment.apply(lambda row: self.__feature_extract.ExtractFeaturesSentence(row), axis = 1)
+            dt_sentiment.fillna(0, inplace = True)
+            dt_sentiment.to_csv(self.parsedDataDir + fNameRaw + self.pathSeparator + fNameRaw+".features")
+            print("Step 6 - Done")
 
         # Step 5 - Feature Extracct
-        if self.__model is None:
-            self.__model = predict.Predict()
-            self.__model.LoadModel()
-        predicted = self.__model.Predict(dt_sentiment)
-        dt_sentiment['sentiment'] = predicted
-        dt_sentiment.to_csv(self.parsedDataDir + fNameRaw + self.pathSeparator + fNameRaw + ".sentiment")
+        if step == 'step-7' or step is None:
+            if self.__model is None:
+                self.__model = predict.Predict()
+                self.__model.LoadModel()
+            predicted = self.__model.Predict(dt_sentiment)
+            dt_sentiment['sentiment'] = predicted
+            dt_sentiment.to_csv(self.parsedDataDir + fNameRaw + self.pathSeparator + fNameRaw + ".sentiment")
 
-        dt_dialog = pd.read_csv(pdfFileDialog)
-        dt_dialog = self.__model.CalculateByTurns(dt_sentiment, dt_dialog)
-        dt_dialog.to_csv(pdfFileDialog, index = False)
-        print("Step 7 - Done")
+            dt_dialog = pd.read_csv(pdfFileDialog)
+            dt_dialog = self.__model.CalculateByTurns(dt_sentiment, dt_dialog)
+            dt_dialog.to_csv(pdfFileDialog, index = False)
+            print("Step 7 - Done")
 
         # Step 7 - Run Basic Reports
-        self.__runBasicReports(dialog, fNameRaw)
-        print("Step 8 - Done")
+        if step == 'step-8' or step is None:
+            self.__runBasicReports(dialog, fNameRaw)
+            print("Step 8 - Done")
 
         # Step 8 - Run NLP Reports
-        self.__runNlpReports(dialogPos, dialog, fNameRaw)
-        print("Step 9 - Done")
+        if step == 'step-9' or step is None:
+            self.__runNlpReports(dialogPos, dialog, fNameRaw)
+            print("Step 9 - Done")
 
 
     # runs basic reports on the PDF

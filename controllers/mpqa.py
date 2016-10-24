@@ -2,9 +2,9 @@ import controllers.base
 import pandas as pd
 
 # my tools
-from tools.parsers.corpuses_sentiment import mpqa as mpqaParser
-from tools.parsers.corpuses_sentiment import mpqaprocessed as mpqaProcessedParser
-from tools.parsers.corpuses_sentiment import generalinquirer as generalInquirerParser
+from tools.parsers.corpora_sentiment import mpqa as mpqaParser
+from tools.parsers.corpora_sentiment import mpqaprocessed as mpqaProcessedParser
+from tools.parsers.corpora_sentiment import generalinquirer as generalInquirerParser
 
 # Controller for handling work with MPQA corpus
 class Mpqa(controllers.base.Base):
