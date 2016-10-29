@@ -122,8 +122,38 @@ class UsedNounsPerson(object):
 										'count' : 1,
 										'synonyms' : synonyms
 											}
-
 		return results
+
+	# cluster results of this report using synonyms provider
+	def clusterResultsByWord(self, original_data):
+		results = {}
+		for person in original_data:
+			words = original_data[person]['nouns']
+			for w in words:
+				if w[0] in results:
+					results[w[0]]['count'] += 1
+				else:
+					found = False
+					synonyms = self._synonymsProvider.GetSynonyms(w[0])
+					for w_s in synonyms:
+						if w_s in results:
+							results[w_s]['count'] += 1
+							found = True
+						else:
+							for record in results:
+								if w_s in results[record]['synonyms']:
+									results[record]['count'] += 1
+									found = True
+									break
+						if found:
+							break
+
+					if not found:
+						results[w[0]] = {
+									'count' : 1,
+									'synonyms' : synonyms
+										}
+		return sorted([(w, results[w]['count']) for w in results.keys()], key=lambda x:x[1], reverse=True)
 
 
 	# this method saveds data produced by this report to a CSV file
@@ -155,3 +185,15 @@ class UsedNounsPerson(object):
 				person = data[idx]
 				for w in person:
 					writer.writerow([data_person[1], data_person[0], w, person[w]['count']])
+
+
+	def SaveToFileClusteredByWord(self, data, name=None):
+		fileName = 'usednouns_by_word.csv'
+		if name != None:
+			fileName = name + ".csv"
+
+		with open(self._outputDir + fileName, 'wb') as csvfile:
+			writer = csv.writer(csvfile, delimiter=',')
+			writer.writerow(['Noun', 'Count'])
+			for w in data:
+				writer.writerow([w[0], w[1]])
