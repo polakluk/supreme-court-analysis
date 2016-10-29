@@ -99,7 +99,7 @@ class Person(object):
 				'sentence_id' : sent_id
 				}
 
-
+	# creates an empty record for sentiment of ona turn
 	def GetPolarizedTurnsPerson(self, nameRole, count, sentiment ):
 		data = nameRole.split('|')
 		return {
@@ -108,3 +108,12 @@ class Person(object):
 				'polarized-class' : sentiment,
 				'turns' : count
 				}
+
+	# creates an empty record for
+	def GetEmptyQuestionPart(self, name, role):
+		return {
+			'name': name,
+			'role': role,
+			'turn': -1,
+			'count': 0
+		}

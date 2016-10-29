@@ -106,13 +106,9 @@ class Sentiment(controllers.base.Base):
     def _calculateSentmentAllTurns(self):
         merger = mergerHelper.Merger()
         args = vars(self.argParser.parse_args())
-        helper = FileHelper()
-        model = predict.Predict()
         for (dirpath, dirnames, filenames) in walk(args['inpFile']):
             for dir_name in dirnames:
                 self.pprint.pprint('{} - {} ==> {}'.format(dirpath, dir_name, filenames))
-                fNameRaw = helper.GetFileName(args['inpFile'])
-
                 fDialogName = dirpath + dir_name + self.pathSeparator + dir_name + ".dialog"
                 dt_dialog = pd.read_csv(fDialogName)
                 dt_dialog['idx'] = dt_dialog.index

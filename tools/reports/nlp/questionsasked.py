@@ -11,90 +11,44 @@ class QuestionsAsked(object):
 
 	# constructor
 	def __init__(self, reportsDir):
-		self.__outputDir = reportsDir
-		self.__dialog = None
-		self.__dialog_pos = None
-		self.__nounPhrases = None
-		self.__synonymsProvider = None
-		self.__synonymSimilarity = 0.5
+		self._outputDir = reportsDir
+		self._dialog_sentence = None
 
 
-	# sets dialog for this report
-	def SetDialog(self, newDialog):
-		self.__dialog = newDialog
-
-
-	# sets POS dialog for this report
-	def SetDialogPos(self, newDialog):
-		self.__dialog_pos = newDialog
-
-
-	# sets synonyms provider for this report
-	def SetSynonymsProvider(slf, provider):
-		self.__synonymsProvider = provider
-
-
-	def SetSynonymSimilarity(self, similarity):
-		self.__synonymSimilarity = similarity
-
-
-	# loads noun phrases and caches them in array
-	def LoadNounPhrases(self):
-		report = nounPhrasePartsReport.NounPhraseParts(self.__outputDir)
-		report.SetDialog(self.__dialog)
-		self.__nounPhrases = report.ExtractNounPhrases()
+	# sets sentene dialog for this report
+	def SetDialogSentence(self, newDialog):
+		self._dialog_sentence = newDialog
 
 
 	# returns list with used nouns per person (raw version not using WordNet)
-	def FindUsedNounsRaw(self):
+	def FindAllQuestions(self):
 		people = personDialog.Person()
-		# dont do anything unless everything is properly set up
-		# check, if noun phrases were loaded
-		if self.__nounPhrases == None:
-			self.LoadNounPhrases()
-
-		# check the noun phrases one more time - if they arent loaded up, then there arent any
-		if self.__nounPhrases == None:
-			return None
 
 		# prepare data structure
-		helper = helperDialog.Helper()
-		listPeople = helper.GetListPeople(self.__dialog.GetDialog())
 		result = {}
-		for person in listPeople:
-			result[person[1]] = people.GetEmptyNounsPerson(person[1], person[0], {})
 
-		for phrase in self.__nounPhrases:
-			for sentence in phrase['nouns']:
-				for word in sentence:
-					if word[0] in result[phrase['name']]['nouns'].keys():
-						result[phrase['name']]['nouns'][word[0]] += 1
-					else:
-						result[phrase['name']]['nouns'][word[0]] = 1
+		# calculate
+		for record in self._dialog_sentence.GetDialogSentences():
+			key = '{}-{}-{}'.format(record['role'], record['name'], record['turn'])
+			if key not in result:
+				result[key] = people.GetEmptyQuestionPart(record['name'], record['role'])
+				result[key]['turn'] = record['turn']
 
-		# sort results for each person
-		for key in result.keys():
-			if len(result[key]['nouns'].keys()):
-				# first, conert it to list of tuples
-				result[key]['nouns'] = [(noun, result[key]['nouns'][noun]) for noun in result[key]['nouns'].keys()]
-				result[key]['nouns'].sort(key = lambda x: x[1], reverse = True)
-			else:
-				result[key]['nouns'] = []
-
+			if '?' in record['sentence']:
+				result[key]['count'] += 1
 		return result
 
 
 	# this method saveds data produced by this report to a CSV file
 	def SaveToFile(self, data, name = None):
-		fileName = 'usednouns.csv'
+		fileName = 'questions_asked.csv'
 		if name != None:
 			fileName = name + ".csv"
 
-		with open(self.__outputDir + fileName, 'wb') as csvfile:
+		list_results = sorted([(data[key]['role'], data[key]['name'], int(data[key]['turn']), data[key]['count']) for key in data.keys()], key=lambda x:x[2])
+
+		with open(self._outputDir + fileName, 'wb') as csvfile:
 			writer = csv.writer(csvfile, delimiter = ',')
-			writer.writerow(['Role', 'Name', 'Noun', 'Count'])
-			for idx in data.keys():
-				row = data[idx]
-				if len(row['nouns']):
-					for nounTuple in row['nouns']:
-						writer.writerow([row['role'], row['name'], nounTuple[0], nounTuple[1]])
+			writer.writerow(['Role', 'Name', 'Turn', 'Count'])
+			for record in list_results:
+				writer.writerow(record)

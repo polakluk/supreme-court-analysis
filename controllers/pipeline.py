@@ -27,7 +27,7 @@ from tools.reports import mostwords as mostWordsReport
 from tools.reports.nlp import nounphraseparts as nounPhrasePartsReport
 from tools.reports.nlp import usednounsperson as usedNounsPersonReport
 from tools.reports.nlp import topicchainindex as topicChainIndexReport
-from tools.reports.nlp import groupsynonymstci as groupSynonymsTciReport
+from tools.reports.nlp import questionsasked as questionsAskedReport
 
 from tools.sentimentanalysis import preparation, featureextract, predict
 
@@ -136,6 +136,8 @@ class Pipeline(controllers.base.Base):
             dialogSent.SplitTurnsToSentences()
             dialogSent.SaveToFile(fNameRaw+".sentences")
             print("Step 4 - Done")
+        else:
+            dialogSent.LoadFromFile(self.parsedDataDir + fNameRaw + self.pathSeparator + fNameRaw + '.sentences')
 
         # Step 5 - Detect POS tags
         dialogPos = dialogPosDialog.PosDialog(self.parsedDataDir + fNameRaw + self.pathSeparator, self.debug)
@@ -181,7 +183,7 @@ class Pipeline(controllers.base.Base):
 
         # Step 8 - Run NLP Reports
         if step == 'step-9' or step is None:
-            self.__runNlpReports(dialogPos, dialog, fNameRaw)
+            self.__runNlpReports(dialogPos, dialog, fNameRaw, dialogSent)
             print("Step 9 - Done")
 
 
@@ -222,41 +224,39 @@ class Pipeline(controllers.base.Base):
 
 
     # runs NLP reports on the PDF
-    def __runNlpReports(self, dialogPos, dialog, fNameRaw):
+    def __runNlpReports(self, dialogPos, dialog, fNameRaw, dialogSentenes):
         helper = dialogHelper.Helper()
         synonymProvider = wordnetLinSyns.Lin()
         synonymProvider.SetSimilarity(0.04)
         synonymProvider.SetMaxWords(5)
         dialog.SetDialog( helper.AssignPositionsPartsDialog(dialog.GetDialog()))
 
-        report1 = nounPhrasePartsReport.NounPhraseParts(self.reportDataDir + fNameRaw + self.pathSeparator)
-        report1.SetDialog(dialog)
-        report1.SetDialogPos(dialogPos)
-        nouns_raw = report1.ExtractNounPhrases()
+#        report1 = nounPhrasePartsReport.NounPhraseParts(self.reportDataDir + fNameRaw + self.pathSeparator)
+#        report1.SetDialog(dialog)
+#        report1.SetDialogPos(dialogPos)
+#        nouns_raw = report1.ExtractNounPhrases()
 
-        report2 = usedNounsPersonReport.UsedNounsPerson(self.reportDataDir + fNameRaw + self.pathSeparator)
-    	report2.SetDialog(dialog)
-        report2.SetDialogPos(dialogPos)
-        report2.SetNounPhrases(nouns_raw)
-        report2.SetSynonymsProvider(synonymProvider)
-        nouns = report2.FindUsedNounsRaw()
-        cluster_people = report2.clusterResultsByPerson(nouns)
-        cluster_word = report2.clusterResultsByWord(nouns)
-        report2.SaveToFile(nouns)
-        report2.SaveToFileClusteredByPerson(cluster_people)
-        report2.SaveToFileClusteredByWord(cluster_word)
+#        report2 = usedNounsPersonReport.UsedNounsPerson(self.reportDataDir + fNameRaw + self.pathSeparator)
+#    	report2.SetDialog(dialog)
+#        report2.SetDialogPos(dialogPos)
+#        report2.SetNounPhrases(nouns_raw)
+#        report2.SetSynonymsProvider(synonymProvider)
+#        nouns = report2.FindUsedNounsRaw()
+#        cluster_people = report2.clusterResultsByPerson(nouns)
+#        cluster_word = report2.clusterResultsByWord(nouns)
+#        report2.SaveToFile(nouns)
+#        report2.SaveToFileClusteredByPerson(cluster_people)
+#        report2.SaveToFileClusteredByWord(cluster_word)
 
 #        report3 = topicChainIndexReport.TopicChainIndex(self.reportDataDir + fNameRaw + self.pathSeparator)
 #    	report3.SetDialogPos(dialogPos)
 #        report3.SetDialog(dialog)
 #        report3.SetThreshold(3)
-#        chains = report3.CalculateTci(nouns)
+#        report3.SetSynonymProvider(synonymProvider)
+#        chains = report3.CalculateTci(cluster_word)
 #        report3.SaveToFile(chains)
 
-#        simProvider = wordnetLinSyns.Lin()
-#        simProvider.SetSimilarity(0.1)
-#        report4 = groupSynonymsTciReport.GroupSynonymsTci(self.reportDataDir + fNameRaw + self.pathSeparator)
-#        report4.SetDialog(dialogPos)
-#        report4.SetSimProvider(simProvider)
-#        grouppedChains = report4.GroupTci(chains)
-#        report4.SaveToFile(grouppedChains)
+        report4 = questionsAskedReport.QuestionsAsked(self.reportDataDir + fNameRaw + self.pathSeparator)
+    	report4.SetDialogSentence(dialogSentenes)
+        questions = report4.FindAllQuestions()
+        report4.SaveToFile(questions)
