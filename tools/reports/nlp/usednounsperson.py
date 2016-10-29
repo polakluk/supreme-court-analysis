@@ -12,44 +12,43 @@ class UsedNounsPerson(object):
 
 	# constructor
 	def __init__(self, reportsDir):
-		self.__outputDir = reportsDir
-		self.__dialog = None
-		self.__dialog_pos = None
-		self.__nounPhrases = None
-		self.__synonymsProvider = None
-		self.__synonymSimilarity = 0.5
-		self.__stopwords = stopwords.words('english')
+		self._outputDir = reportsDir
+		self._dialog = None
+		self._dialog_pos = None
+		self._nounPhrases = None
+		self._synonymsProvider = None
+		self._stopwords = stopwords.words('english')
 
 
 	# sets dialog for this report
 	def SetDialog(self, newDialog):
-		self.__dialog = newDialog
+		self._dialog = newDialog
 
 
 	# sets POS dialog for this report
 	def SetDialogPos(self, newDialog):
-		self.__dialog_pos = newDialog
+		self._dialog_pos = newDialog
 
 
 	# sets noun phrases
 	def SetNounPhrases(self, phrases):
-		self.__nounPhrases = phrases
+		self._nounPhrases = phrases
 
 
 	# sets synonyms provider for this report
 	def SetSynonymsProvider(self, provider):
-		self.__synonymsProvider = provider
+		self._synonymsProvider = provider
 
 
 	def SetSynonymSimilarity(self, similarity):
-		self.__synonymSimilarity = similarity
+		self._synonymSimilarity = similarity
 
 
 	# loads noun phrases and caches them in array
 	def LoadNounPhrases(self):
-		report = nounPhrasePartsReport.NounPhraseParts(self.__outputDir)
-		report.SetDialog(self.__dialog_pos)
-		self.__nounPhrases = report.ExtractNounPhrases()
+		report = nounPhrasePartsReport.NounPhraseParts(self._outputDir)
+		report.SetDialog(self._dialog_pos)
+		self._nounPhrases = report.ExtractNounPhrases()
 
 
 	# returns list with used nouns per person (raw version not using WordNet)
@@ -57,29 +56,30 @@ class UsedNounsPerson(object):
 		people = personDialog.Person()
 		# dont do anything unless everything is properly set up
 		# check, if noun phrases were loaded
-		if self.__nounPhrases is None:
+		if self._nounPhrases is None:
 			self.LoadNounPhrases()
 
 		# check the noun phrases one more time - if they arent loaded up, then there arent any
-		if self.__nounPhrases is None:
+		if self._nounPhrases is None:
 			return None
 
 		# prepare data structure
 		helper = helperDialog.Helper()
-		listPeople = helper.GetListPeople(self.__dialog.GetDialog())
+		listPeople = helper.GetListPeople(self._dialog.GetDialog())
 		result = {}
 		for person in listPeople:
-			result[person[1]] = people.GetEmptyNounsPerson(person[1], person[0], {})
+			result['{}-{}'.format(person[1], person[0])] = people.GetEmptyNounsPerson(person[1], person[0], {})
 
-		for phrase in self.__nounPhrases:
+		for phrase in self._nounPhrases:
 			for word in phrase['nouns']:
-				if word in self.__stopwords: # skip stopwords
+				if word in self._stopwords: # skip stopwords
 					continue
 
-				if word in result[phrase['name']]['nouns'].keys():
-					result[phrase['name']]['nouns'][word] += 1
+				key = '{}-{}'.format(phrase['name'], phrase['role'])
+				if word in result[key]['nouns'].keys():
+					result[key]['nouns'][word] += 1
 				else:
-					result[phrase['name']]['nouns'][word] = 1
+					result[key]['nouns'][word] = 1
 
 		# sort results for each person
 		for key in result.keys():
@@ -92,6 +92,39 @@ class UsedNounsPerson(object):
 
 		return result
 
+	# cluster results of this report using synonyms provider
+	def clusterResultsByPerson(self, original_data):
+		results = {}
+		for person in original_data:
+			results[person] = {}
+			words = original_data[person]['nouns']
+			for w in words:
+				if w[0] in results[person]:
+					results[person][w[0]]['count'] += 1
+				else:
+					found = False
+					synonyms = self._synonymsProvider.GetSynonyms(w[0])
+					for w_s in synonyms:
+						if w_s in results[person]:
+							results[person][w_s]['count'] += 1
+							found = True
+						else:
+							for record in results[person]:
+								if w_s in results[person][record]['synonyms']:
+									results[person][record]['count'] += 1
+									found = True
+									break
+						if found:
+							break
+
+					if not found:
+						results[person][w[0]] = {
+										'count' : 1,
+										'synonyms' : synonyms
+											}
+
+		return results
+
 
 	# this method saveds data produced by this report to a CSV file
 	def SaveToFile(self, data, name = None):
@@ -99,7 +132,7 @@ class UsedNounsPerson(object):
 		if name != None:
 			fileName = name + ".csv"
 
-		with open(self.__outputDir + fileName, 'wb') as csvfile:
+		with open(self._outputDir + fileName, 'wb') as csvfile:
 			writer = csv.writer(csvfile, delimiter = ',')
 			writer.writerow(['Role', 'Name', 'Noun', 'Count'])
 			for idx in data.keys():
@@ -107,3 +140,18 @@ class UsedNounsPerson(object):
 				if len(row['nouns']):
 					for nounTuple in row['nouns']:
 						writer.writerow([row['role'], row['name'], nounTuple[0], nounTuple[1]])
+
+
+	def SaveToFileClusteredByPerson(self, data, name=None):
+		fileName = 'usednouns_by_person.csv'
+		if name != None:
+			fileName = name + ".csv"
+
+		with open(self._outputDir + fileName, 'wb') as csvfile:
+			writer = csv.writer(csvfile, delimiter=',')
+			writer.writerow(['Role', 'Name', 'Noun', 'Count'])
+			for idx in data.keys():
+				data_person = idx.split('-')
+				person = data[idx]
+				for w in person:
+					writer.writerow([data_person[1], data_person[0], w, person[w]['count']])

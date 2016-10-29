@@ -11,10 +11,8 @@ from tools.dialogs import extractor
 from tools.dialogs import container as dialogContainer
 from tools.dialogs import posdialog as dialogPosDialog
 from tools.dialogs import sentencedialog as dialogSentenceDialog
-from tools.pos import nltkpos as nltkPos
 from tools.pos import textblobpostagger as textBlobPosTagger
 from tools.dialogs import helper as dialogHelper
-from tools.synonyms import wordnet as wordnetSyns
 from tools.synonyms import lin as wordnetLinSyns
 
 # frequency reports
@@ -118,8 +116,8 @@ class Pipeline(controllers.base.Base):
             print("Step 2 - Done")
 
         # Step 3 - Split it into dialog parts
+        pdfFileDialog = self.parsedDataDir + fNameRaw + self.pathSeparator + fNameRaw  + ".dialog"
         if step == 'step-3' or step is None:
-            pdfFileDialog = self.parsedDataDir + fNameRaw + self.pathSeparator + fNameRaw  + ".dialog"
             with open(pdfFileClean, "r") as cleanFile:
                 extractTool = extractor.Extractor(self.parsedDataDir + fNameRaw + self.pathSeparator , False)
                 dialogParts = extractTool.Extract(cleanFile.read())
@@ -127,32 +125,31 @@ class Pipeline(controllers.base.Base):
             print("Step 3 - Done")
 
         # Step 4 - Split into sentences
+        if self.__pos_tagger is None:
+            self.__pos_tagger = textBlobPosTagger.TextBlobPosTagger()
+        dialog = dialogContainer.Container()
+        dialog.LoadFromFile(pdfFileDialog)
+        dialogSent = dialogSentenceDialog.SentenceDialog(self.parsedDataDir + fNameRaw + self.pathSeparator, self.debug)
+        dialogSent.SetDialog(dialog)
+        dialogSent.SetPosTagger(self.__pos_tagger)
         if step == 'step-4' or step is None:
-            pdfFileSent = self.parsedDataDir + fNameRaw + self.pathSeparator + fNameRaw  + ".sentences"
-            if self.__pos_tagger is None:
-                self.__pos_tagger = textBlobPosTagger.TextBlobPosTagger()
-            dialog = dialogContainer.Container()
-            dialog.LoadFromFile(pdfFileDialog)
-            dialogSent = dialogSentenceDialog.SentenceDialog(self.parsedDataDir + fNameRaw + self.pathSeparator, self.debug)
-            dialogSent.SetDialog(dialog)
-            dialogSent.SetPosTagger(self.__pos_tagger)
             dialogSent.SplitTurnsToSentences()
             dialogSent.SaveToFile(fNameRaw+".sentences")
             print("Step 4 - Done")
 
         # Step 5 - Detect POS tags
+        dialogPos = dialogPosDialog.PosDialog(self.parsedDataDir + fNameRaw + self.pathSeparator, self.debug)
+        dialogPos.SetDialogSent(dialogSent)
+        dialogPos.SetPosTagger(self.__pos_tagger)
         if step == 'step-5' or step is None:
-            pdfFilePos = self.parsedDataDir + fNameRaw + self.pathSeparator + fNameRaw  + ".pos"
-            dialogPos = dialogPosDialog.PosDialog(self.parsedDataDir + fNameRaw + self.pathSeparator, self.debug)
-            dialogPos.SetDialogSent(dialogSent)
-            dialogPos.SetPosTagger(self.__pos_tagger)
             data = dialogPos.GetPosTaggedParts()
             dialogPos.SaveToFile(fNameRaw+".pos")
             print("Step 5 - Done")
+        else:
+            dialogPos.LoadFromFile(self.parsedDataDir + fNameRaw + self.pathSeparator + fNameRaw + '.pos')
 
         # Step 5 - Feature Extracct
         if step == 'step-6' or step is None:
-            pdfFilePos = self.parsedDataDir + fNameRaw + self.pathSeparator + fNameRaw  + ".pos"
             if self.__feature_extract is None:
                 self.__feature_extract = featureextract.FeatureExtract(self.pprint)
                 self.__feature_extract.Initialize()
@@ -227,26 +224,33 @@ class Pipeline(controllers.base.Base):
     # runs NLP reports on the PDF
     def __runNlpReports(self, dialogPos, dialog, fNameRaw):
         helper = dialogHelper.Helper()
-        people = helper.GetListPeople(dialog.GetDialog())
-        dialog.SetDialog( helper.AssignPositionsPartsDialog( dialog.GetDialog() ) )
+        synonymProvider = wordnetLinSyns.Lin()
+        synonymProvider.SetSimilarity(0.04)
+        synonymProvider.SetMaxWords(8)
+        dialog.SetDialog( helper.AssignPositionsPartsDialog(dialog.GetDialog()))
 
         report1 = nounPhrasePartsReport.NounPhraseParts(self.reportDataDir + fNameRaw + self.pathSeparator)
-        report1.SetDialog(dialogPos)
+        report1.SetDialog(dialog)
+        report1.SetDialogPos(dialogPos)
         nouns_raw = report1.ExtractNounPhrases()
 
         report2 = usedNounsPersonReport.UsedNounsPerson(self.reportDataDir + fNameRaw + self.pathSeparator)
     	report2.SetDialog(dialog)
         report2.SetDialogPos(dialogPos)
         report2.SetNounPhrases(nouns_raw)
+        report2.SetSynonymsProvider(synonymProvider)
         nouns = report2.FindUsedNounsRaw()
-        report2.SaveToFile(nouns)
+#        report2.SaveToFile(nouns)
+        data = report2.clusterResultsByPerson(nouns)
+        report2.SaveToFileClusteredByPerson(data)
+        self.pprint.pprint(data)
 
-        report3 = topicChainIndexReport.TopicChainIndex(self.reportDataDir + fNameRaw + self.pathSeparator)
-    	report3.SetDialogPos(dialogPos)
-        report3.SetDialog(dialog)
-        report3.SetThreshold(3)
-        chains = report3.CalculateTci(nouns)
-        report3.SaveToFile(chains)
+#        report3 = topicChainIndexReport.TopicChainIndex(self.reportDataDir + fNameRaw + self.pathSeparator)
+#    	report3.SetDialogPos(dialogPos)
+#        report3.SetDialog(dialog)
+#        report3.SetThreshold(3)
+#        chains = report3.CalculateTci(nouns)
+#        report3.SaveToFile(chains)
 
 #        simProvider = wordnetLinSyns.Lin()
 #        simProvider.SetSimilarity(0.1)

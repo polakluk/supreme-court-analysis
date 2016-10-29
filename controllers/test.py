@@ -1,7 +1,7 @@
 import controllers.base
 import re
 from tools.filehelper import FileHelper
-
+from tools.synonyms.lin import Lin
 class Test(controllers.base.Base):
 
     # constructor
@@ -14,10 +14,10 @@ class Test(controllers.base.Base):
 
     # method for testing code and short experiments
     def _test(self):
+        syns = Lin()
+        syns.SetSimilarity(0.03)
+        print syns.GetSynonyms('argument')
 #        parser = negationParser.Negation()
 #        data = parser.readFileRaw(None)
 #        parser.saveFileCsv(data, None)
 #        print(data)
-        helper = FileHelper()
-        fNameRaw = helper.GetFileName('.\arguments\modes.info')
-        print fNameRaw
