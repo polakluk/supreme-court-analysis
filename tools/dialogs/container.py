@@ -7,24 +7,24 @@ class Container(object):
 
 	# constructor
 	def __init__(self):
-		self.__list_people = None
-		self.__num_parts_justices = -1
+		self._list_people = None
+		self._num_parts_justices = -1
 
 
 	# setter for dialog
 	def SetDialog(self, actDialog):
-		self.__dialog = actDialog
-		self.__list_people = None
-		self.__num_parts_justices = -1
+		self._dialog = actDialog
+		self._list_people = None
+		self._num_parts_justices = -1
 
 
 	# returns the current dialog
 	def GetDialog(self):
-		return self.__dialog
+		return self._dialog
 
 
 	def LoadFromFile(self, filename):
-		self.__dialog = []
+		self._dialog = []
 		people = personDialog.Person()
 		with open(filename, 'rb') as csvfile:
 			reader = csv.reader(csvfile, delimiter=',')
@@ -41,7 +41,7 @@ class Container(object):
 					obj['turn'] = (int)(row[4])
 					if readSentiment:
 						obj['sentiment'] = row[5]
-					self.__dialog.append(obj)
+					self._dialog.append(obj)
 				else:
 					readSentiment = len(row) > 5
 					skippedFirstLine = True

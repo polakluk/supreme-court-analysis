@@ -94,6 +94,7 @@ class Pipeline(controllers.base.Base):
     def _run_pipeline(self, fRaw, modePdf=None, noPdf=False, step=None):
         helper = FileHelper()
         fNameRaw = helper.GetFileName(fRaw)
+        print("Filename - {}".format(fNameRaw))
         # Step 0 - Create directories
         if not os.path.exists(self.parsedDataDir + fNameRaw + self.pathSeparator):
             os.makedirs(self.parsedDataDir + fNameRaw + self.pathSeparator)
@@ -109,17 +110,17 @@ class Pipeline(controllers.base.Base):
 
         # Step 2 - Clean up the file afterwards
         if step == 'step-2' or step is None:
-            pdfFileRaw = self.parsedDataDir + fNameRaw + self.pathSeparator + fNameRaw  + ".plain"
-            pdfFileClean = self.parsedDataDir + fNameRaw + self.pathSeparator + fNameRaw  + ".clean"
-            cleaner = basic.Basic(self.parsedDataDir + fNameRaw + self.pathSeparator )
-            cleaner.cleanUp(pdfFileRaw);
+            pdfFileRaw = self.parsedDataDir + fNameRaw + self.pathSeparator + fNameRaw + ".plain"
+            pdfFileClean = self.parsedDataDir + fNameRaw + self.pathSeparator + fNameRaw + ".clean"
+            cleaner = basic.Basic(self.parsedDataDir + fNameRaw + self.pathSeparator)
+            cleaner.cleanUp(pdfFileRaw)
             print("Step 2 - Done")
 
         # Step 3 - Split it into dialog parts
-        pdfFileDialog = self.parsedDataDir + fNameRaw + self.pathSeparator + fNameRaw  + ".dialog"
+        pdfFileDialog = self.parsedDataDir + fNameRaw + self.pathSeparator + fNameRaw + ".dialog"
         if step == 'step-3' or step is None:
             with open(pdfFileClean, "r") as cleanFile:
-                extractTool = extractor.Extractor(self.parsedDataDir + fNameRaw + self.pathSeparator , False)
+                extractTool = extractor.Extractor(self.parsedDataDir + fNameRaw + self.pathSeparator, False)
                 dialogParts = extractTool.Extract(cleanFile.read())
                 extractTool.SaveToFile(dialogParts, pdfFileDialog)
             print("Step 3 - Done")
@@ -144,13 +145,13 @@ class Pipeline(controllers.base.Base):
         dialogPos.SetDialogSent(dialogSent)
         dialogPos.SetPosTagger(self.__pos_tagger)
         if step == 'step-5' or step is None:
-            data = dialogPos.GetPosTaggedParts()
+            dialogPos.GetPosTaggedParts()
             dialogPos.SaveToFile(fNameRaw+".pos")
             print("Step 5 - Done")
         else:
             dialogPos.LoadFromFile(self.parsedDataDir + fNameRaw + self.pathSeparator + fNameRaw + '.pos')
 
-        # Step 5 - Feature Extracct
+        # Step 6 - Feature Extracct
         if step == 'step-6' or step is None:
             if self.__feature_extract is None:
                 self.__feature_extract = featureextract.FeatureExtract(self.pprint)
@@ -162,7 +163,7 @@ class Pipeline(controllers.base.Base):
             dt_sentiment.to_csv(self.parsedDataDir + fNameRaw + self.pathSeparator + fNameRaw+".features")
             print("Step 6 - Done")
 
-        # Step 5 - Feature Extracct
+        # Step 7 - Feature Extracct
         if step == 'step-7' or step is None:
             if self.__model is None:
                 self.__model = predict.Predict()
@@ -176,12 +177,12 @@ class Pipeline(controllers.base.Base):
             dt_dialog.to_csv(pdfFileDialog, index = False)
             print("Step 7 - Done")
 
-        # Step 7 - Run Basic Reports
+        # Step 8 - Run Basic Reports
         if step == 'step-8' or step is None:
             self.__runBasicReports(dialog, fNameRaw)
             print("Step 8 - Done")
 
-        # Step 8 - Run NLP Reports
+        # Step 9 - Run NLP Reports
         if step == 'step-9' or step is None:
             self.__runNlpReports(dialogPos, dialog, fNameRaw, dialogSent)
             print("Step 9 - Done")
@@ -231,30 +232,30 @@ class Pipeline(controllers.base.Base):
         synonymProvider.SetMaxWords(5)
         dialog.SetDialog( helper.AssignPositionsPartsDialog(dialog.GetDialog()))
 
-#        report1 = nounPhrasePartsReport.NounPhraseParts(self.reportDataDir + fNameRaw + self.pathSeparator)
-#        report1.SetDialog(dialog)
-#        report1.SetDialogPos(dialogPos)
-#        nouns_raw = report1.ExtractNounPhrases()
+        report1 = nounPhrasePartsReport.NounPhraseParts(self.reportDataDir + fNameRaw + self.pathSeparator)
+        report1.SetDialog(dialog)
+        report1.SetDialogPos(dialogPos)
+        nouns_raw = report1.ExtractNounPhrases()
 
-#        report2 = usedNounsPersonReport.UsedNounsPerson(self.reportDataDir + fNameRaw + self.pathSeparator)
-#    	report2.SetDialog(dialog)
-#        report2.SetDialogPos(dialogPos)
-#        report2.SetNounPhrases(nouns_raw)
-#        report2.SetSynonymsProvider(synonymProvider)
-#        nouns = report2.FindUsedNounsRaw()
-#        cluster_people = report2.clusterResultsByPerson(nouns)
-#        cluster_word = report2.clusterResultsByWord(nouns)
-#        report2.SaveToFile(nouns)
-#        report2.SaveToFileClusteredByPerson(cluster_people)
-#        report2.SaveToFileClusteredByWord(cluster_word)
+        report2 = usedNounsPersonReport.UsedNounsPerson(self.reportDataDir + fNameRaw + self.pathSeparator)
+    	report2.SetDialog(dialog)
+        report2.SetDialogPos(dialogPos)
+        report2.SetNounPhrases(nouns_raw)
+        report2.SetSynonymsProvider(synonymProvider)
+        nouns = report2.FindUsedNounsRaw()
+        cluster_people = report2.clusterResultsByPerson(nouns)
+        cluster_word = report2.clusterResultsByWord(nouns)
+        report2.SaveToFile(nouns)
+        report2.SaveToFileClusteredByPerson(cluster_people)
+        report2.SaveToFileClusteredByWord(cluster_word)
 
-#        report3 = topicChainIndexReport.TopicChainIndex(self.reportDataDir + fNameRaw + self.pathSeparator)
-#    	report3.SetDialogPos(dialogPos)
-#        report3.SetDialog(dialog)
-#        report3.SetThreshold(3)
-#        report3.SetSynonymProvider(synonymProvider)
-#        chains = report3.CalculateTci(cluster_word)
-#        report3.SaveToFile(chains)
+        report3 = topicChainIndexReport.TopicChainIndex(self.reportDataDir + fNameRaw + self.pathSeparator)
+    	report3.SetDialogPos(dialogPos)
+        report3.SetDialog(dialog)
+        report3.SetThreshold(3)
+        report3.SetSynonymProvider(synonymProvider)
+        chains = report3.CalculateTci(cluster_word)
+        report3.SaveToFile(chains)
 
         report4 = questionsAskedReport.QuestionsAsked(self.reportDataDir + fNameRaw + self.pathSeparator)
     	report4.SetDialogSentence(dialogSentenes)

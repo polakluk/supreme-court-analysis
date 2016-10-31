@@ -43,7 +43,7 @@ class SentenceDialog(object):
 
 		if self._list_parts_sentences == None or refresh:
 			self._list_parts_sentences = []
-			parts = self.__dialog.GetDialog()
+			parts = self._dialog.GetDialog()
 			people = personDialog.Person()
 			idx = 0
 
@@ -51,6 +51,10 @@ class SentenceDialog(object):
 				sentences = self._pos_tagger.SeparateSentenctes(part['text'])
 				sent_id = 0
 				for sent in sentences:
+					if len(sent) > 0 and sent[0] == '(':
+						sent = sent+')'
+					elif sent == ')':
+						continue
 					obj = people.GetEmptySentencePerson(part['name'], idx, sent, sent_id, part['was_interrupted'], part['role'])
 					self._list_parts_sentences.append(obj)
 					sent_id += 1

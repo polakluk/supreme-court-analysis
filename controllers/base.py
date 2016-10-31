@@ -58,7 +58,7 @@ class Base(object):
 
         if self.timeIt:
             tEnd = time.time()
-            print "Elapsed time: " + str(tEnd - tStart)
+            self.pprint.pprint("Elapsed time: {}".format(str(tEnd - tStart)))
 
 
     def _printHelp(self):

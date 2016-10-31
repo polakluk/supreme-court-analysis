@@ -70,6 +70,11 @@ class Basic(object):
 			res = line.decode('utf-8')
 			res = res.replace(u'—','-')
 			res = res.replace(u'‘','\'')
+
+			res = res.replace(u'Mr.', 'Mr')
+			res = res.replace(u'Mrs.', 'Mrs')
+			res = res.replace(u'Ms.', 'Ms')
+
 			res = res.encode('ASCII')
 
 			return res.strip()

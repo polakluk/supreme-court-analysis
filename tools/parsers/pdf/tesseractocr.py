@@ -22,7 +22,7 @@ class TesseractOcr(object):
 		self.__outputDir = outputDir
 #		self.__img_crop = [270, 150, 1105, 1480] #left top right bottom # 150 DPI
 
-		self.__img_crop_modes = [[510, 310, 2260, 2980], [510, 270, 2260, 2900]]  #left top right bottom # 300DPI ]
+		self.__img_crop_modes = [[510, 310, 2260, 2980], [510, 270, 2260, 2910]]  #left top right bottom # 300DPI ]
 		self.__img_crop = self.__img_crop_modes[0] # (mode 0 = page numbers top right corner) (mode = 1 page numbers bottom center)
 		self.__threshold = 0.4508
 		self.__dpi = 300
@@ -47,9 +47,6 @@ class TesseractOcr(object):
 		reCaseSubmitted = re.compile(ur'The case is submitted\.\s*\(Whereupon,', re.UNICODE)
 		reCaseSubmitted2 = re.compile(ur'Case is submitted\.\s*\(Whereupon,', re.UNICODE)
 		reCaseSubmitted3 = re.compile(ur'\(?Whereupon, at \w\w:\w\w', re.UNICODE) # the most-relaxed
-
-		req_image = []
-		final_text = []
 
 		# get file name
 		helper = FileHelper()
@@ -105,19 +102,17 @@ class TesseractOcr(object):
 #		image_pdf = Image(filename=pdfFile, resolution=self.__dpi)
 #		image_pngs = image_pdf.convert('png')
 #		img = image_pngs.sequence[idx]
+		idx = 0
 		with Image(filename = pdfFile) as img:
 #			if self.__debug:
 #				print "Parsing Page: " + str(idx + 1)
 			cloneImg = img
 			#img[self.__img_crop[0] : self.__img_crop[2], self.__img_crop[1] : self.__img_crop[3] ]
 			cloneImg.alpha_channel = False
-	#		cloneImg.save(filename = './img_{}.png'.format(idx))
+			cloneImg.save(filename = './img_{}.png'.format(idx))
 			self.evaluate( cloneImg, 'threshold', self.__threshold)
 
 			txt = tool.image_to_string( PI.open(io.BytesIO(cloneImg.make_blob('png'))), lang=lang, builder=pyocr.builders.TextBuilder())+ "\n"
 			test = self._clean_text(txt)
-			print(reCaseSubmitted.search(test) != None)
-			print("#############################################################")
-
 #			print(txt[1000:1179])
 			print(self._clean_text(txt))

@@ -9,7 +9,7 @@ class Controller(object):
     # controller
     def __init__(self, isDebug, timeIt):
         self.isDebug = isDebug
-    	self.pprint = pprint.PrettyPrinter(indent = 4 )
+        self.pprint = pprint.PrettyPrinter(indent = 4)
         self.timeIt = timeIt
         self.argParser = None
 
