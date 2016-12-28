@@ -1,5 +1,8 @@
 *.pyc
 *.dump
+.idea
+.ipynb_checkpoints
+arguments
 report-data
 parsed-data
 .ipynb_checkpoints

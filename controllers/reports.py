@@ -23,7 +23,6 @@ from tools.reports import mostwords as mostWordsReport
 from tools.reports.nlp import nounphraseparts as nounPhrasePartsReport
 from tools.reports.nlp import usednounsperson as usedNounsPersonReport
 from tools.reports.nlp import topicchainindex as topicChainIndexReport
-from tools.reports.nlp import groupsynonymstci as groupSynonymsTciReport
 from tools.reports.nlp import mostpolarized as mostpolarizedReport
 
 class Reports(controllers.base.Base):
@@ -34,7 +33,6 @@ class Reports(controllers.base.Base):
         self.availableTask = {
                                 'nlp-report' : self._nlpReports,
                                 'basic' : self._genericReports,
-                                'flat-files' : self._flatFiles,
                                 'merge-reports': self._mergeReports
         }
 
@@ -179,20 +177,17 @@ class Reports(controllers.base.Base):
         report4 = groupSynonymsTciReport.GroupSynonymsTci(self.reportDataDir)
         report4.SetDialog(dialogPos)
         report4.SetSimProvider(simProvider)
-        grouppedChains = report4.GroupTci(chains)
-        if self.debug:
-            self.pprint.pprint("")
-            self.pprint.pprint("")
-            self.pprint.pprint("############ NLP Report #4 - Group Topic Chain Index by person using synonyms")
-            self.pprint.pprint(grouppedChains)
+#        grouppedChains = report4.GroupTci(chains)
+#        if self.debug:
+#            self.pprint.pprint("")
+#            self.pprint.pprint("")
+#            self.pprint.pprint("############ NLP Report #4 - Group Topic Chain Index by person using synonyms")
+#            self.pprint.pprint(grouppedChains)
 #        report4.SaveToFile(grouppedChains)
 
-    def _flatFiles(self):
-
-
     def _mergeReports(self):
-        list_reports = ['allturns', 'follow', 'followratio', 'mostfollow', 'usednouns', 'words',
-                        'turns', 'tci_3']
+        list_reports = ['allturns', 'follow', 'followratio', 'mostfollow', 'usednouns', 'usednouns_by_person', 'usednouns_by_word', 'words',
+                        'turns', 'tci_3', 'questions_asked']
         for (dirpath, dirnames, filenames) in walk(self.reportDataDir):
             for f_name in list_reports:
                 merger = mergerHelper.Merger()

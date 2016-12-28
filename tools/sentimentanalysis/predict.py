@@ -12,7 +12,7 @@ class Predict(object):
 
     # constructor
     def __init__(self):
-        self.version = '11' # active version of sentiment model
+        self.version = '8' # active version of sentiment model
         self.pathSep = os.path.sep
         self._model_path = '.'+self.pathSep + 'models-sentiment' + self.pathSep + 'version_'
         self._model = None

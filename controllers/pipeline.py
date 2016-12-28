@@ -103,8 +103,8 @@ class Pipeline(controllers.base.Base):
 
         # Step 1 - Read PDF file
         if not noPdf:
-            if self.__parser_pdf is None:
-                self.__parser_pdf = TesseractParser.TesseractOcr(self.parsedDataDir + fNameRaw + self.pathSeparator)
+            self.__parser_pdf = TesseractParser.TesseractOcr(self.parsedDataDir + fNameRaw + self.pathSeparator)
+#            self.__parser_pdf.setOutpuDir(self.parsedDataDir + fNameRaw + self.pathSeparator)
             self.__parser_pdf.readFile(fRaw, modePdf)
             print("Step 1 - Done")
 
@@ -152,6 +152,7 @@ class Pipeline(controllers.base.Base):
             dialogPos.LoadFromFile(self.parsedDataDir + fNameRaw + self.pathSeparator + fNameRaw + '.pos')
 
         # Step 6 - Feature Extracct
+        dt_sentiment = None
         if step == 'step-6' or step is None:
             if self.__feature_extract is None:
                 self.__feature_extract = featureextract.FeatureExtract(self.pprint)
@@ -163,11 +164,15 @@ class Pipeline(controllers.base.Base):
             dt_sentiment.to_csv(self.parsedDataDir + fNameRaw + self.pathSeparator + fNameRaw+".features")
             print("Step 6 - Done")
 
-        # Step 7 - Feature Extracct
+        # Step 7 - Sentiment Estimation
         if step == 'step-7' or step is None:
             if self.__model is None:
                 self.__model = predict.Predict()
                 self.__model.LoadModel()
+            if dt_sentiment is None:
+                with open(self.parsedDataDir + fNameRaw + self.pathSeparator + fNameRaw+".features", "r") as featuresFile:
+                    dt_sentiment = pd.read_csv(featuresFile)
+
             predicted = self.__model.Predict(dt_sentiment)
             dt_sentiment['sentiment'] = predicted
             dt_sentiment.to_csv(self.parsedDataDir + fNameRaw + self.pathSeparator + fNameRaw + ".sentiment")

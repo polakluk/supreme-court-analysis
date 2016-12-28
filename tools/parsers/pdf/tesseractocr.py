@@ -35,6 +35,8 @@ class TesseractOcr(object):
 			wand.image.EVALUATE_OPS.index(operation),
 			img.quantum_range * float(argument))
 
+	def setOutpuDir(self, output):
+		self.__outputDir = output
 
 	# reads PDF file and returns its plain text representation
 	def readFile(self, pdfFile, mode = 'top-right' ):
