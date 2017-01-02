@@ -214,7 +214,7 @@ class Pipeline(controllers.base.Base):
         report4 = mostFollowReport.MostFollow(self.reportDataDir + fNameRaw + self.pathSeparator)
         report4.SetDialog(dialog)
         report4.SetInterval(0.2, 0.7)
-        data = report4.MostFollows()
+        data = report4.MostFollows(dataPositions)
         report4.SaveToFile(data)
 
         report5 = turnsPositionLengthReport.TurnsPositionLength(self.reportDataDir + fNameRaw + self.pathSeparator)
@@ -230,17 +230,19 @@ class Pipeline(controllers.base.Base):
 
         report7 = detectPositionReport.DetectPositions(self.reportDataDir + fNameRaw + self.pathSeparator)
         report7.SetDialog(dialog)
-        data = report7.Detect()
-        report7.SaveToFile(data)
+        dataPositions = report7.Detect()
+        report7.SaveToFile(dataPositions)
 
 
     # runs NLP reports on the PDF
     def __runNlpReports(self, dialogPos, dialog, fNameRaw, dialogSentenes):
         helper = dialogHelper.Helper()
         synonymProvider = wordnetLinSyns.Lin()
-        synonymProvider.SetSimilarity(0.04)
-        synonymProvider.SetMaxWords(5)
+        synonymProvider.SetSimilarity(0.05)
+        synonymProvider.SetMaxWords(0)
         dialog.SetDialog( helper.AssignPositionsPartsDialog(dialog.GetDialog()))
+        with open(self.reportDataDir + fNameRaw + self.pathSeparator + 'positions.csv') as f:
+            dfPositions = pd.read_csv(f)
 
         report1 = nounPhrasePartsReport.NounPhraseParts(self.reportDataDir + fNameRaw + self.pathSeparator)
         report1.SetDialog(dialog)
@@ -269,7 +271,7 @@ class Pipeline(controllers.base.Base):
 
         report4 = questionsAskedReport.QuestionsAsked(self.reportDataDir + fNameRaw + self.pathSeparator)
     	report4.SetDialogSentence(dialogSentenes)
-        questions = report4.FindAllQuestions()
+        questions = report4.FindAllQuestions(dfPositions)
         report4.SaveToFile(questions)
 
         report5 = turnsPositionLengthReport.TurnsPositionLength(self.reportDataDir + fNameRaw + self.pathSeparator)

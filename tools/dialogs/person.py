@@ -115,6 +115,7 @@ class Person(object):
 			'name': name,
 			'role': role,
 			'turn': -1,
+			'position': '',
 			'count': 0
 		}
 

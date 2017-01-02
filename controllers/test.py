@@ -33,5 +33,13 @@ class Test(controllers.base.Base):
                     df.to_csv(dirpath+dir_name+self.pathSeparator+dir_name+'.'+f_name, index=False)
 
     def _test(self):
-        self.__parser_pdf = TesseractParser.TesseractOcr(self.parsedDataDir )
-        self.__parser_pdf.testPdf('./img_60.png') #readFileAdvanced('.\\arguments\\bottom-middle\\12-1497_6k37.pdf', 'bottom-middle')
+        list_processed = ['positions']
+        for (dirpath, dirnames, filenames) in walk(self.reportDataDir):
+            for f_name in list_processed:
+                for dir_name in dirnames:
+                    df = pd.read_csv(dirpath+dir_name+self.pathSeparator+dir_name+'.'+f_name)
+                    if 'Name' in df.columns:
+                        df = df.apply(lambda row: self._run_update(row, 'Name', 'Role'), axis = 1)
+                    elif 'name' in df.columns:
+                        df = df.apply(lambda row: self._run_update(row, 'name', 'role'), axis = 1)
+                    df.to_csv(dirpath+dir_name+self.pathSeparator+dir_name+'.'+f_name, index=False)
