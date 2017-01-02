@@ -33,7 +33,8 @@ class Reports(controllers.base.Base):
         self.availableTask = {
                                 'nlp-report' : self._nlpReports,
                                 'basic' : self._genericReports,
-                                'merge-reports': self._mergeReports
+                                'merge-reports': self._mergeReports,
+                                'merge-preprocessed': self._mergePreprocessedData,
         }
 
 
@@ -186,15 +187,30 @@ class Reports(controllers.base.Base):
 #        report4.SaveToFile(grouppedChains)
 
     def _mergeReports(self):
-        list_reports = ['allturns', 'follow', 'followratio', 'mostfollow', 'usednouns', 'usednouns_by_person', 'usednouns_by_word', 'words',
-                        'turns', 'tci_3', 'questions_asked']
+        list_reports = ['positions']
         for (dirpath, dirnames, filenames) in walk(self.reportDataDir):
             for f_name in list_reports:
                 merger = mergerHelper.Merger()
                 for dir_name in dirnames:
+                    docketName = dir_name.split('_')
                     df = pd.read_csv(dirpath+dir_name+self.pathSeparator+f_name+'.csv')
                     df['idx'] = df.index
-                    df['docket'] = dir_name
+                    df['docket'] = docketName[0]
                     merger.add_dataframe(df)
 
                 merger.export_dataframe(self.reportDataDir+f_name+'.csv')
+
+
+    def _mergePreprocessedData(self):
+        list_processed = ['sentences', 'pos', 'dialog']
+        for (dirpath, dirnames, filenames) in walk(self.parsedDataDir):
+            for f_name in list_processed:
+                merger = mergerHelper.Merger()
+                for dir_name in dirnames:
+                    docketName = dir_name.split('_')
+                    df = pd.read_csv(dirpath+dir_name+self.pathSeparator+dir_name+'.'+f_name)
+                    df['idx'] = df.index
+                    df['docket'] = docketName[0]
+                    merger.add_dataframe(df)
+
+                merger.export_dataframe(self.parsedDataDir+f_name+'.csv')

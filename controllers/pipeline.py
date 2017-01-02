@@ -22,6 +22,7 @@ from tools.reports import followratio as followRatioReport
 from tools.reports import mostfollow as mostFollowReport
 from tools.reports import turnspositionlength as turnsPositionLengthReport
 from tools.reports import mostwords as mostWordsReport
+from tools.reports import detectpositions as detectPositionReport
 
 # nlp reports
 from tools.reports.nlp import nounphraseparts as nounPhrasePartsReport
@@ -104,14 +105,13 @@ class Pipeline(controllers.base.Base):
         # Step 1 - Read PDF file
         if not noPdf:
             self.__parser_pdf = TesseractParser.TesseractOcr(self.parsedDataDir + fNameRaw + self.pathSeparator)
-#            self.__parser_pdf.setOutpuDir(self.parsedDataDir + fNameRaw + self.pathSeparator)
             self.__parser_pdf.readFile(fRaw, modePdf)
             print("Step 1 - Done")
 
         # Step 2 - Clean up the file afterwards
+        pdfFileRaw = self.parsedDataDir + fNameRaw + self.pathSeparator + fNameRaw + ".plain"
+        pdfFileClean = self.parsedDataDir + fNameRaw + self.pathSeparator + fNameRaw + ".clean"
         if step == 'step-2' or step is None:
-            pdfFileRaw = self.parsedDataDir + fNameRaw + self.pathSeparator + fNameRaw + ".plain"
-            pdfFileClean = self.parsedDataDir + fNameRaw + self.pathSeparator + fNameRaw + ".clean"
             cleaner = basic.Basic(self.parsedDataDir + fNameRaw + self.pathSeparator)
             cleaner.cleanUp(pdfFileRaw)
             print("Step 2 - Done")
@@ -228,6 +228,11 @@ class Pipeline(controllers.base.Base):
         data = report6.CountWords()
         report6.SaveToFile(data)
 
+        report7 = detectPositionReport.DetectPositions(self.reportDataDir + fNameRaw + self.pathSeparator)
+        report7.SetDialog(dialog)
+        data = report7.Detect()
+        report7.SaveToFile(data)
+
 
     # runs NLP reports on the PDF
     def __runNlpReports(self, dialogPos, dialog, fNameRaw, dialogSentenes):
@@ -266,3 +271,13 @@ class Pipeline(controllers.base.Base):
     	report4.SetDialogSentence(dialogSentenes)
         questions = report4.FindAllQuestions()
         report4.SaveToFile(questions)
+
+        report5 = turnsPositionLengthReport.TurnsPositionLength(self.reportDataDir + fNameRaw + self.pathSeparator)
+        report5.SetDialog(dialog)
+        data = report5.AllTurns()
+        report5.SaveToFile(data)
+
+        report6 = mostWordsReport.MostWords(self.reportDataDir + fNameRaw + self.pathSeparator)
+        report6.SetDialog(dialog)
+        data = report6.CountWords()
+        report6.SaveToFile(data)

@@ -3,7 +3,7 @@ class Helper(object):
 
 	# get list of people who participate in the dialog
 	# returns list of arrays in form [0 => role, 1 => name]
-	def GetListPeople(self, dialog, onlyJustices = False):
+	def GetListPeople(self, dialog, onlyJustices = False, onlyOthers = False):
 		listPeople = []
 		# no information is cached so far, or refresh was requested
 		for person in dialog:
@@ -18,7 +18,10 @@ class Helper(object):
 		if onlyJustices:
 			return [p for p in listPeople if p[0] == 'justice']
 		else:
-			return listPeople
+			if onlyOthers:
+				return [p for p in listPeople if p[0] == 'other']				
+			else:
+				return listPeople
 
 
 	# this method gets number of dialog parts which belong to justices

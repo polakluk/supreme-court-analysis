@@ -38,7 +38,7 @@ class NounPhraseParts(object):
 		result = []
 		for part in parts:
 			uniqueNouns = set()
-			if len(part['sentence']) == 1:
+			if len(part['sentence']) < 2:
 				continue
 			[ uniqueNouns.add(w[0].lower()) for w in part['pos'] if (w[1] in self._noun_tags) and len(w[0]) > 1]
 			result.append(people.GetEmptyNounsPerson(part['name'], part['role'], uniqueNouns))

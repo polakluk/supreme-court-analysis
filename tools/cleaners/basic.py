@@ -36,7 +36,7 @@ class Basic(object):
 			 # trim white spaces and get rid of wierd unicode character
 			line = self.__preprocessLine(line)
 
-			if len(line) == 0: # skip empty lines
+			if len(line.strip()) == 0: # skip empty lines
 				continue
 
 			# keep track of last 2 non-empty lines
@@ -74,6 +74,7 @@ class Basic(object):
 			res = res.replace(u'Mr.', 'Mr')
 			res = res.replace(u'Mrs.', 'Mrs')
 			res = res.replace(u'Ms.', 'Ms')
+			res = res.replace(u'O\'CONNOR', 'OCONNOR')
 
 			res = res.encode('ASCII')
 

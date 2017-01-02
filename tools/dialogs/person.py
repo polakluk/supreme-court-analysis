@@ -117,3 +117,10 @@ class Person(object):
 			'turn': -1,
 			'count': 0
 		}
+
+	def GetEmptyPositionPerson(self, name):
+		return {
+			'name': name,
+			'turn': 0,
+			'position': '',
+		}

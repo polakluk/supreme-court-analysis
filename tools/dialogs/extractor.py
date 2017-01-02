@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import re
 import csv
 from tools.dialogs import person as personDialog
@@ -24,7 +26,7 @@ class Extractor(object):
 		res = []
 
 		people = personDialog.Person()
-		reFindPeople = re.compile("(\n|--|^)(MR\.|JUSTICE|CHIEF JUSTICE|MRS\.|MS\.)(\s\w+)+:")
+		reFindPeople = re.compile("(\n|--|^)(MR\s?\.\s?|JUSTICE|THE|CHIEF JUSTICE|GENERAL|MRS\s?\.\s?|MS\s?\.\s?)(\s\w+)+:")
 		lastMessageEnded = 0 # position where the last person's part ended
 
 		# these two variables take care of properly loading data
@@ -44,9 +46,18 @@ class Extractor(object):
 			# start a new person
 			actPerson = people.GetEmpty()
 
-			actPerson['name'] = person.group(3).strip()
-			actPerson['role'] = self.__identifyRole(person.group(2).strip())
-			actPerson['turn'] = turn
+			if person.group(2).replace(' ', '') == 'THE' and person.group(3).replace(' ', '') == 'COURT':
+				actPerson['role'] = 'justice'
+				actPerson['name'] = 'ROBERTS'
+			else:
+				actPerson['role'] = self._identifyRole(person.group(2).replace(' ', ''))
+				actPerson['name'] = self.fixNames(person.group(3).replace(' ', ''), actPerson['role'])
+				actPerson['turn'] = turn
+
+				if actPerson['name'] == 'SCALIA':
+					actPerson['role'] = 'justice'
+				elif actPerson['name'] == 'BREYER':
+					actPerson['role'] = 'justice'
 
 			# if this is the first person to be processed,
 			# set the marker to position AFTER peron's name
@@ -56,9 +67,9 @@ class Extractor(object):
 
 				if txt[-2:] == '--':
 					prevPerson['was_interrupted'] = True
-					prevPerson['text'] = self.__clearTextPart( txt[:len(txt)-2] ) # use text without interruption marks
+					prevPerson['text'] = self._clearTextPart( txt[:len(txt)-2] ) # use text without interruption marks
 				else:
-					prevPerson['text'] = self.__clearTextPart( txt )
+					prevPerson['text'] = self._clearTextPart( txt )
 
 				if person.group(1).strip() == "--" : # yeah, the previous person was interrupted
 					prevPerson['was_interrupted'] = True
@@ -69,7 +80,7 @@ class Extractor(object):
 			lastMessageEnded = person.end() + 1
 			turn += 1
 
-		actPerson['text'] = self.__clearTextPart( text[lastMessageEnded:] )
+		actPerson['text'] = self._clearTextPart( text[lastMessageEnded:] )
 		res.append(actPerson)
 		if self.__debug == True:
 			for row in res:
@@ -79,14 +90,66 @@ class Extractor(object):
 
 
 	# selects the corret for for person
-	def __identifyRole(self, role):
-		if role == 'JUSTICE' or role == 'CHIEF JUSTICE':
+	def _identifyRole(self, role):
+		if role == 'JUSTICE' or role == 'CHIEFJUSTICE':
 			return 'justice'
 		return 'other'
 
 
+	@classmethod
+	def fixNames(cls, name, role):
+	    mapping = {
+	    	'other': {    	
+		        'McCarthy': 'MCCARTHY',
+		        'McCARTHY': 'MCCARTHY',
+		        'MITCIELL': 'MITCHELL',
+		        'MITCiELL': 'MITCHELL',
+				'McGILL': 'MCGILL',
+		        'McALLISTER': 'MCALLISTER',
+		        'THIEKMAN': 'THIERMAN',
+		        'THEIRMAN': 'THIERMAN',
+		        'McCRACKEN': 'MCCRACKEN',
+		        'FISCHER': 'FISHER',
+				'FISHEQ': 'FISHER',
+		        'GOLDBERG': 'GOLDENBERG',
+		        'PHILIPS': 'PHILLIPS',
+				'DREESEN': 'DREEBEN',
+				'FELDWAN': 'FELDMAN',
+		        'HANSMEIEQ': 'HANSMEIER',
+		        'ANDEQS': 'ANDERS',
+		        'H0': 'HO',
+		        'RUSSEL': 'RUSSELL',
+		        'DeSANCTIS': 'DESANCTIS',
+		        'DREE3EN': 'DREEBEN',
+		        'LYNCi': 'LYNCH',
+		        'HACKEQ': 'HACKER',
+		        'McCONNELL': 'MCCONNELL',
+		        'GOLDSLATT': 'GOLDBLATT',
+				'KS': 'ANDERS',
+	    	},
+	    	'justice': {
+		       'RO3ERTS': 'ROBERTS',
+		       '3REYER': 'BREYER',
+		       'BQEYER' : 'BREYER',
+		       'SREYER': 'BREYER',
+		       'SREYER': 'BREYER',
+		       'SOTOMAYOQ': 'SOTOMAYOR',
+		       'ROSERTS': 'ROBERTS',
+		       'SOTOWAYOR': 'SOTOMAYOR',
+		       'SOTOMAYOK': 'SOTOMAYOR',
+		       'GINSBERG': 'GINSBURG',
+		        'KENNEY': 'KENNEDY',
+		        'SCLIA': 'SCALIA',
+	    	}
+	    }
+	    if name in mapping[role].keys():
+	        return mapping[role][name]
+	    return name
+
+
+
 	# this method cleans up text part for each person so any preceeding -- will be removed
-	def __clearTextPart(self, text):
+	def _clearTextPart(self, text):
 		res = text.replace("\n", ' ').strip()
 		if res[:2] == '--':
 			return res[2:].strip()
