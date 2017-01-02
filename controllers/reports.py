@@ -187,7 +187,7 @@ class Reports(controllers.base.Base):
 #        report4.SaveToFile(grouppedChains)
 
     def _mergeReports(self):
-        list_reports = ['positions']
+        list_reports = ['positions', 'questions_asked', 'allturns', 'follow', 'followratio', 'mostfollow', 'tci_3', 'turns', 'words', 'interruptions']
         for (dirpath, dirnames, filenames) in walk(self.reportDataDir):
             for f_name in list_reports:
                 merger = mergerHelper.Merger()

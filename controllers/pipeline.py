@@ -23,6 +23,7 @@ from tools.reports import mostfollow as mostFollowReport
 from tools.reports import turnspositionlength as turnsPositionLengthReport
 from tools.reports import mostwords as mostWordsReport
 from tools.reports import detectpositions as detectPositionReport
+from tools.reports import interruptions as interruptionsReport
 
 # nlp reports
 from tools.reports.nlp import nounphraseparts as nounPhrasePartsReport
@@ -195,6 +196,18 @@ class Pipeline(controllers.base.Base):
 
     # runs basic reports on the PDF
     def __runBasicReports(self, dialog, fNameRaw):
+
+        report7 = detectPositionReport.DetectPositions(self.reportDataDir + fNameRaw + self.pathSeparator)
+        report7.SetDialog(dialog)
+        dataPositions = report7.Detect()
+        report7.SaveToFile(dataPositions)
+
+        report8 = interruptionsReport.Interruptions(self.reportDataDir + fNameRaw + self.pathSeparator)
+        report8.SetDialog(dialog)
+        data = report8.CountInterruptions(dataPositions)
+        report8.SaveToFile(data)
+        return
+
         report1 = turnsReport.Turns(self.reportDataDir + fNameRaw + self.pathSeparator )
         report1.SetDialog(dialog)
         data = report1.Turns()
@@ -227,11 +240,6 @@ class Pipeline(controllers.base.Base):
         report6.SetDialog(dialog)
         data = report6.CountWords()
         report6.SaveToFile(data)
-
-        report7 = detectPositionReport.DetectPositions(self.reportDataDir + fNameRaw + self.pathSeparator)
-        report7.SetDialog(dialog)
-        dataPositions = report7.Detect()
-        report7.SaveToFile(dataPositions)
 
 
     # runs NLP reports on the PDF

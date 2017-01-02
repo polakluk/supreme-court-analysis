@@ -125,3 +125,10 @@ class Person(object):
 			'turn': 0,
 			'position': '',
 		}
+
+	def GetEmptyInterruptionPerson(self, name):
+		return {
+			'name': name,
+			'count': 0,
+			'position': '',
+		}
