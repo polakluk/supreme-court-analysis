@@ -179,7 +179,11 @@ class Pipeline(controllers.base.Base):
             dt_sentiment.to_csv(self.parsedDataDir + fNameRaw + self.pathSeparator + fNameRaw + ".sentiment")
 
             dt_dialog = pd.read_csv(pdfFileDialog)
+            with open(self.reportDataDir + fNameRaw + self.pathSeparator + 'positions.csv') as f:
+                dfPositions = pd.read_csv(f)
+            self._actPhase = ''
             dt_dialog = self.__model.CalculateByTurns(dt_sentiment, dt_dialog)
+            dt_dialog = dt_dialog.apply(lambda row: self._addPosition(row, dfPositions), axis=1, reduce=False)
             dt_dialog.to_csv(pdfFileDialog, index = False)
             print("Step 7 - Done")
 
@@ -194,20 +198,27 @@ class Pipeline(controllers.base.Base):
             print("Step 9 - Done")
 
 
+    def _addPosition(self, row, dfPositions):
+        if dfPositions[dfPositions['Turn'] == int(row['turn'])].shape[0] > 0:
+            self._actPhase = dfPositions[dfPositions['Turn'] == int(row['turn'])]['Position'].values[0]
+
+        row['Position'] = self._actPhase
+        return row
+
+
     # runs basic reports on the PDF
     def __runBasicReports(self, dialog, fNameRaw):
 
-        report7 = detectPositionReport.DetectPositions(self.reportDataDir + fNameRaw + self.pathSeparator)
-        report7.SetDialog(dialog)
-        dataPositions = report7.Detect()
-        report7.SaveToFile(dataPositions)
+        report3 = followRatioReport.FollowRatio(self.reportDataDir + fNameRaw + self.pathSeparator)
+        report3.SetDialog(dialog)
+        data = report3.CalculateFollowRatio()
+        report3.SaveToFile(data)
 
-        report8 = interruptionsReport.Interruptions(self.reportDataDir + fNameRaw + self.pathSeparator)
-        report8.SetDialog(dialog)
-        data = report8.CountInterruptions(dataPositions)
-        report8.SaveToFile(data)
+        report4 = mostFollowReport.MostFollow(self.reportDataDir + fNameRaw + self.pathSeparator)
+        report4.SetDialog(dialog)
+        data = report4.MostFollows()
+        report4.SaveToFile(data)
         return
-
         report1 = turnsReport.Turns(self.reportDataDir + fNameRaw + self.pathSeparator )
         report1.SetDialog(dialog)
         data = report1.Turns()
@@ -226,7 +237,6 @@ class Pipeline(controllers.base.Base):
 
         report4 = mostFollowReport.MostFollow(self.reportDataDir + fNameRaw + self.pathSeparator)
         report4.SetDialog(dialog)
-        report4.SetInterval(0.2, 0.7)
         data = report4.MostFollows(dataPositions)
         report4.SaveToFile(data)
 
@@ -241,6 +251,15 @@ class Pipeline(controllers.base.Base):
         data = report6.CountWords()
         report6.SaveToFile(data)
 
+        report7 = detectPositionReport.DetectPositions(self.reportDataDir + fNameRaw + self.pathSeparator)
+        report7.SetDialog(dialog)
+        dataPositions = report7.Detect()
+        report7.SaveToFile(dataPositions)
+
+        report8 = interruptionsReport.Interruptions(self.reportDataDir + fNameRaw + self.pathSeparator)
+        report8.SetDialog(dialog)
+        data = report8.CountInterruptions(dataPositions)
+        report8.SaveToFile(data)
 
     # runs NLP reports on the PDF
     def __runNlpReports(self, dialogPos, dialog, fNameRaw, dialogSentenes):

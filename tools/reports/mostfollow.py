@@ -88,4 +88,5 @@ class MostFollow(object):
 				follower = ['---', '---']
 				if data[key]['follower'] != None:
 					follower = data[key]['follower'].split('|')
-				writer.writerow([data[key]['role'], data[key]['name'], follower[0], follower[1], data[key]['ratio']])
+				writer.writerow([data[key]['role'], data[key]['name'],
+								 follower[0], follower[1], data[key]['ratio']])

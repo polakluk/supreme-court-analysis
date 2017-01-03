@@ -35,6 +35,7 @@ class Interruptions(object):
         actPhase = ''
         # walk through the dialog and calculate it
         dfPositions = [[record['turn'], record['name'], record['position']] for record in dfPositions]
+        dif = 0
         df = pd.DataFrame(dfPositions, columns=['Turn', 'Name', 'Position'])
         for part in self.__dialog.GetDialog():
             if df[df['Turn'] == int(part['turn'])].shape[0] > 0:
@@ -48,6 +49,10 @@ class Interruptions(object):
                 res[key]['position'] = actPhase
 
         res = sorted(res.values(), key = lambda x: x['count'], reverse = True)
+        for record in res:
+            if record['position'] == 0:
+                record['count'] = -record['count']
+
         return res
 
 
